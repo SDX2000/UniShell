@@ -4,11 +4,12 @@ import sys
 sys.path.extend(["lib"])
 
 import os
-import cmd
 import string
 import readline
-from objects import FileInfo
+#from objects import FileInfo
+from commands import *
 from pprint import pprint
+
 
 def printBanner():
     print("UniShell Version 0.0.1")
@@ -16,14 +17,21 @@ def printBanner():
     print("")
 
 
-def main(args):
-    printBanner()
+cmds = {"stat" : Stat()
+        #, "cd" : ChangeDirectory
+        #, "exit" : Exit
+        #, "quit" : Exit
+}
 
-    if args:
+
+#TODO: handle KeyboardInterrupt
+def main(args):
+    if len(args) > 1:
         with open(args[1], "r") as f:
             for line in f:
                 processInput(line)
     else:
+        printBanner()
         while True:
             try:
                 cwd = os.getcwd()
@@ -35,24 +43,30 @@ def main(args):
             if not processInput(inp):
                 break
 
-def processInput(cmd):
-    if not cmd:
+def processInput(cmdLine):
+    if not cmdLine:
         return True
     
-    cmd = cmd.strip()
-    
-    if cmd == "quit" or cmd == "exit":
+    cmdLine = cmdLine.strip()
+
+    #Skip comments
+    if cmdLine.startswith("#"):
+        return True
+
+    #TODO: replace with quit command
+    if cmdLine == "quit" or cmdLine == "exit":
         return False
 
-    cmdPart = cmd.split()
+    cmdLinePart = cmdLine.split()
 
-    if not cmdPart:
+    if not cmdLinePart:
         return True
 
-    if cmdPart[0] == "stat":
-        pprint(FileInfo(cmdPart[1]))
-    else:
-        print(cmd)
+    try:
+        cmd = cmds[cmdLinePart[0]]
+        print(cmd.execute(cmdLinePart[1:]))
+    except KeyError:
+        print("ERROR: Unkown command: {}".format(cmdLinePart[0]))
 
     return True
 
