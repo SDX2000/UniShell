@@ -1,1 +1,5 @@
+#Test UniShell script
 stat unishell.py
+cd commands
+stat Stat.py
+exit 1

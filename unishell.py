@@ -6,7 +6,6 @@ sys.path.extend(["lib"])
 import os
 import string
 import readline
-#from objects import FileInfo
 from commands import *
 from pprint import pprint
 
@@ -21,10 +20,40 @@ cmds = {"stat" : Stat()
         , "cd" : ChangeDirectory()
         , "exit" : Exit()
         , "quit" : Exit()
+        , "cls" : ClearScreen()
 }
 
+"""
+TODO:
+ - handle KeyboardInterrupt
 
-#TODO: handle KeyboardInterrupt
+Implement console features:-
+ - Autocomplete
+ - History
+
+Implement language features:-
+ - user defined prompts
+ - strings, quoted strings, escapes, slicing, string operations
+ - string interpolation "$x, $(time)". The $ sign is only required within strings for interpolation.
+ - lists, a = [a b c], a.len()
+ - conditionals if/else/elif, pattern matching with match
+ - regular expression literals /abc/ig, =~
+ - loops
+ - numbers, (num x), (str n)
+ - wildcards *,**,?
+ - functions
+ - variables, scopes, persistence (use json/sqlite?), x = 10, print x
+ - command substitution (pwd)
+ 
+ - exceptions (try, catch, finally)
+ 
+Implement commands :-
+ - ls
+ - copy
+ - rsync
+ - exec $code
+ - alias
+"""
 def main(args):
     if len(args) > 1:
         with open(args[1], "r") as f:
@@ -69,7 +98,7 @@ def processInput(cmdLine):
         if retVal:
             print(retVal)
     except Exception as e:
-        print("ERROR:", e, file=sys.stderr)
+        print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
 
     return True
 

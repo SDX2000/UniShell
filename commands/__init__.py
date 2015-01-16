@@ -5,5 +5,6 @@ sys.path.append("..")
 from .Stat import Stat
 from .ChangeDirectory import ChangeDirectory
 from .Exit import Exit
+from .ClearScreen import ClearScreen
 
 
