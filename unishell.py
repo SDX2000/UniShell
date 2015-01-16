@@ -16,16 +16,17 @@ def printBanner():
     print("")
 
 
-cmds = {"stat" : Stat()
-        , "cd" : ChangeDirectory()
-        , "exit" : Exit()
-        , "quit" : Exit()
-        , "cls" : ClearScreen()
+cmds = {"stat" : cmdStat
+        , "cd" : cmdChangeDirectory
+        , "exit" : cmdExit
+        , "quit" : cmdExit
+        , "cls" : cmdClearScreen
 }
 
 """
 TODO:
  - handle KeyboardInterrupt
+ - Be case insensitive
 
 Implement console features:-
  - Autocomplete
@@ -44,8 +45,10 @@ Implement language features:-
  - functions
  - variables, scopes, persistence (use json/sqlite?), x = 10, print x
  - command substitution (pwd)
- 
  - exceptions (try, catch, finally)
+ - pipes
+ - redirection
+ - external commands, set search paths
  
 Implement commands :-
  - ls
@@ -94,7 +97,7 @@ def processInput(cmdLine):
         return True
 
     try:
-        retVal = cmd.execute(cmdLinePart[1:])
+        retVal = cmd(cmdLinePart[1:])
         if retVal:
             print(retVal)
     except Exception as e:
