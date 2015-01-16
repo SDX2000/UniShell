@@ -6,7 +6,7 @@ class InvalidArgumentError(ValueError):
         self.argValue = argValue
 
     def __repr__(self):
-        return "ERROR: Invalid argument {}={}.".format(argName, argValue)
+        return "Invalid argument {}={}.".format(argName, argValue)
 
 class Command(metaclass=ABCMeta):
     @abstractmethod

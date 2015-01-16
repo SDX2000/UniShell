@@ -18,9 +18,9 @@ def printBanner():
 
 
 cmds = {"stat" : Stat()
-        #, "cd" : ChangeDirectory
-        #, "exit" : Exit
-        #, "quit" : Exit
+        , "cd" : ChangeDirectory()
+        , "exit" : Exit()
+        , "quit" : Exit()
 }
 
 
@@ -53,10 +53,6 @@ def processInput(cmdLine):
     if cmdLine.startswith("#"):
         return True
 
-    #TODO: replace with quit command
-    if cmdLine == "quit" or cmdLine == "exit":
-        return False
-
     cmdLinePart = cmdLine.split()
 
     if not cmdLinePart:
@@ -64,9 +60,16 @@ def processInput(cmdLine):
 
     try:
         cmd = cmds[cmdLinePart[0]]
-        print(cmd.execute(cmdLinePart[1:]))
     except KeyError:
-        print("ERROR: Unkown command: {}".format(cmdLinePart[0]))
+        print("ERROR: Unkown command: {}".format(cmdLinePart[0]), file=sys.stderr)
+        return True
+
+    try:
+        retVal = cmd.execute(cmdLinePart[1:])
+        if retVal:
+            print(retVal)
+    except Exception as e:
+        print("ERROR:", e, file=sys.stderr)
 
     return True
 
