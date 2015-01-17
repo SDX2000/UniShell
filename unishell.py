@@ -7,6 +7,7 @@ import os
 import string
 import readline
 import collections
+
 from pprint import pprint
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
@@ -20,15 +21,31 @@ def printBanner():
     print("Copyright (C) Sandeep Datta, 2015")
     print("")
 
+
+
 gCommandTable = {
     "stat"      : cmdStat
     , "cd"      : cmdChangeDirectory
     , "exit"    : cmdExit
     , "quit"    : cmdExit
     , "cls"     : cmdClearScreen
+    , "set"     : cmdSet
+    , "env"     : cmdEnv
+    , "echo"    : cmdEcho
+    , "ls"      : cmdListDir
 }
 
-gVariables = {}
+gVariables = {
+}
+
+gExportedVariables = {
+}
+
+gContext = {
+    "commands" : gCommandTable
+    , "variables"  : gVariables
+    , "exportedVariables"  : gExportedVariables
+}
 
 
 grammar = """
@@ -40,14 +57,24 @@ grammar = """
     bare_str     = r'(\w|[.:*?/@~])*'
     string       = quoted_str / bare_str
     expr         = string / number
-    bare_command = ident (WS expr)*
+    flag         = ("-" ident / "--" ident)
+    bare_command = ident (WS (flag / expr))*
     command      = "(" WS? bare_command WS? ")"
     stmnt        = WS? (bare_command / command)? WS?
     prog         = (stmnt EOL)+ / (stmnt EOF)
 """
 
-parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
+parser = ParserPEG(grammar, "prog", skipws = False, debug=False)
 
+def partition(pred, _list):
+    return ([x for x in _list if not pred(x)], [x for x in _list if pred(x)])
+
+class Flag:
+    def __init__(self, name, value=1):
+        self.name = name
+        self.value = value
+    def __repr__(self):
+        return "Flag(name='{}', value={})".format(self.name, self.value)
 
 class UniShellVisitor(PTNodeVisitor):
 
@@ -60,6 +87,9 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_stmnt(self, node, children):
         retVal = children[0] if children else None
         return retVal
+
+    def visit_flag(self, node, children):
+        return Flag(children[0])
 
     def visit_quoted_str(self, node, children):
         #print("STR NODE VALUE:", )
@@ -75,9 +105,8 @@ class UniShellVisitor(PTNodeVisitor):
 
     def visit_bare_command(self, node, children):
         cmdName = children[0]
-        args = children[1:]
+        args, flags = partition(lambda x: isinstance(x, Flag), children[1:])
 
-        #print("Cmdname:{} args:{}".format(cmdName, args))
 
         try:
             cmd = gCommandTable[cmdName]
@@ -86,7 +115,7 @@ class UniShellVisitor(PTNodeVisitor):
             return None
 
         try:
-            retVal = cmd(args)
+            retVal = cmd(args, flags, gContext)
             return retVal
         except Exception as e:
             print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
