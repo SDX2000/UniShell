@@ -14,6 +14,9 @@ class InvalidArgumentError(ValueError):
         return "Invalid argument {}='{}'.".format(self.argName, self.argValue)
 
 def cmdStat(args):
+    """
+    Display file or file system status
+    """
     if not args:
         raise InvalidArgumentError("filePath", ", ".join(args))
     filePath = args[0]
@@ -21,6 +24,9 @@ def cmdStat(args):
 
 
 def cmdChangeDirectory(args):
+    """
+    Change directory
+    """
     try:
         os.chdir(args[0])
     except IndexError:
@@ -28,10 +34,16 @@ def cmdChangeDirectory(args):
 
 
 def cmdExit(args):
+    """
+    Exit shell
+    """
     try:
         sys.exit(args[0])
     except IndexError:
         sys.exit(0)
 
 def cmdClearScreen(args):
+    """
+    Clear screen
+    """
     print("\x1Bc", end="")
