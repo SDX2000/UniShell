@@ -10,12 +10,12 @@ class InvalidArgumentError(ValueError):
         self.argName = argName
         self.argValue = argValue
 
-    def __repr__(self):
-        return "Invalid argument {}={}.".format(argName, argValue)
+    def __str__(self):
+        return "Invalid argument {}='{}'.".format(self.argName, self.argValue)
 
 def cmdStat(args):
     if not args:
-        raise InvalidArgumentError("filePath", args)
+        raise InvalidArgumentError("filePath", ", ".join(args))
     filePath = args[0]
     return FileInfo(filePath)
 

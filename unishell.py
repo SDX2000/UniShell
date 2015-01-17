@@ -6,14 +6,14 @@ sys.path.extend(["lib"])
 import os
 import string
 import readline
+import collections
 from pprint import pprint
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
+from arpeggio.cleanpeg import ParserPEG
 
-
-import unishell_peg
 from commands import *
 
-
+debug = False
 
 def printBanner():
     print("UniShell Version 0.0.1")
@@ -30,6 +30,23 @@ gCommandTable = {
 
 gVariables = {}
 
+
+grammar = """
+    WS           = r'[ \t]+'
+    EOL          = "\n"
+    number       = r'\d+\.\d+|\d+'
+    ident        = r'\w(\w|\d|_)*'
+    quoted_str   = r'"[^"]*"'
+    expr         = quoted_str / number
+    bare_command = ident (WS expr)*
+    command      = "(" WS? bare_command WS? ")"
+    stmnt        = WS? (bare_command / command)? WS?
+    prog         = (stmnt EOL)+ / (stmnt EOF)
+"""
+
+parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
+
+
 class UniShellVisitor(PTNodeVisitor):
 
     def visit_WS(self, node, children):
@@ -42,6 +59,15 @@ class UniShellVisitor(PTNodeVisitor):
         retVal = children[0] if children else None
         return retVal
 
+    def visit_quoted_str(self, node, children):
+        #print("STR NODE VALUE:", )
+        #print("STR CHILDREN:", children)
+        if node.value:
+            retVal = node.value[1:]
+            retVal = retVal[:-1]
+            #print("__str:", retVal)
+            return retVal
+
     def visit_prog(self, node, children):
         return children
 
@@ -49,26 +75,34 @@ class UniShellVisitor(PTNodeVisitor):
         cmdName = children[0]
         args = children[1:]
 
+        #print("Cmdname:{} args:{}".format(cmdName, args))
+
         try:
             cmd = gCommandTable[cmdName]
         except KeyError:
-            print("ERROR: Unkown command: {}".format(cmdLinePart[0]), file=sys.stderr)
-            return
+            print("ERROR: Unkown command: {}".format(cmdName), file=sys.stderr)
+            return None
 
         try:
             retVal = cmd(args)
-            if retVal:
-                print(retVal)
+            return retVal
         except Exception as e:
             print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
         
 
-visitor = UniShellVisitor(debug=False)
+visitor = UniShellVisitor(debug=debug)
 
 def processProg(prog):
+    #print("++++++++++processProg('{}') called".format(prog))
     try:
-        parse_tree = unishell_peg.parse(prog)
+        parse_tree = parser.parse(prog)
         result = visit_parse_tree(parse_tree, visitor)
+        if result:
+            if isinstance(result, collections.Iterable):
+                for elem in result:
+                    print(elem)
+            else:
+                print(result)
         return result
     except NoMatch as e:
         print("SYNTAX ERROR: ", e)
@@ -113,9 +147,12 @@ Implement commands :-
 """
 def main(args):
     if len(args) > 1:
-        with open(args[1], "r") as f:
-            for line in f:
-                processProg(line)
+        if args[1] == "-c":
+            retVal = processProg(' '.join(args[2:]))
+        else:
+            with open(args[1], "r") as f:
+                for line in f:
+                    retVal = processProg(line)
     else:
         printBanner()
         while True:
@@ -125,7 +162,7 @@ def main(args):
             except EOFError:
                 print("")
                 break
-            processProg(inp)
+            retVal = processProg(inp)
 
 
 if __name__ == '__main__':
