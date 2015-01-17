@@ -1,5 +1,4 @@
-#Test UniShell script
 stat unishell.py
-cd commands
-stat Stat.py
+cd "commands"
+stat "__init__.py"
 exit 1

@@ -29,7 +29,7 @@ def cmdChangeDirectory(args):
 
 def cmdExit(args):
     try:
-        sys.exit(int(args[0]))
+        sys.exit(args[0])
     except IndexError:
         sys.exit(0)
 

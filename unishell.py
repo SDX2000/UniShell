@@ -7,7 +7,10 @@ import os
 import string
 import readline
 from pprint import pprint
+from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 
+
+import unishell_peg
 from commands import *
 
 
@@ -16,7 +19,6 @@ def printBanner():
     print("UniShell Version 0.0.1")
     print("Copyright (C) Sandeep Datta, 2015")
     print("")
-
 
 gCommandTable = {
     "stat"      : cmdStat
@@ -28,6 +30,50 @@ gCommandTable = {
 
 gVariables = {}
 
+class UniShellVisitor(PTNodeVisitor):
+
+    def visit_WS(self, node, children):
+        return None
+
+    def visit_EOL(self, node, children):
+        return None
+
+    def visit_stmnt(self, node, children):
+        retVal = children[0] if children else None
+        return retVal
+
+    def visit_prog(self, node, children):
+        return children
+
+    def visit_bare_command(self, node, children):
+        cmdName = children[0]
+        args = children[1:]
+
+        try:
+            cmd = gCommandTable[cmdName]
+        except KeyError:
+            print("ERROR: Unkown command: {}".format(cmdLinePart[0]), file=sys.stderr)
+            return
+
+        try:
+            retVal = cmd(args)
+            if retVal:
+                print(retVal)
+        except Exception as e:
+            print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
+        
+
+visitor = UniShellVisitor(debug=False)
+
+def processProg(prog):
+    try:
+        parse_tree = unishell_peg.parse(prog)
+        result = visit_parse_tree(parse_tree, visitor)
+        return result
+    except NoMatch as e:
+        print("SYNTAX ERROR: ", e)
+
+  
 """
 TODO:
  - handle KeyboardInterrupt
@@ -69,7 +115,7 @@ def main(args):
     if len(args) > 1:
         with open(args[1], "r") as f:
             for line in f:
-                processInput(line)
+                processProg(line)
     else:
         printBanner()
         while True:
@@ -79,39 +125,7 @@ def main(args):
             except EOFError:
                 print("")
                 break
-
-            if not processInput(inp):
-                break
-
-def processInput(cmdLine):
-    if not cmdLine:
-        return True
-    
-    cmdLine = cmdLine.strip()
-
-    #Skip comments
-    if cmdLine.startswith("#"):
-        return True
-
-    cmdLinePart = cmdLine.split()
-
-    if not cmdLinePart:
-        return True
-
-    try:
-        cmd = gCommandTable[cmdLinePart[0]]
-    except KeyError:
-        print("ERROR: Unkown command: {}".format(cmdLinePart[0]), file=sys.stderr)
-        return True
-
-    try:
-        retVal = cmd(cmdLinePart[1:])
-        if retVal:
-            print(retVal)
-    except Exception as e:
-        print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
-
-    return True
+            processProg(inp)
 
 
 if __name__ == '__main__':
