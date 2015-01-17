@@ -53,7 +53,7 @@ grammar = """
     number       = r'\d+\.\d+|\d+'
     ident        = r'\w(\w|\d|_)*'
     quoted_str   = r'"[^"]*"'
-    bare_str     = r'(\w|[.:*?/@~$])*'
+    bare_str     = r'(\w|[.:*?/@~${}])*'
     string       = quoted_str / bare_str
     expr         = string / number
     flag         = ("-" ident / "--" ident)
@@ -78,7 +78,7 @@ class Flag:
 
 class UniShellVisitor(PTNodeVisitor):
 
-    interpRegex = re.compile(r'\$(\w(\w|\d|_)*)')
+    interpRegex = re.compile(r'\$(?P<name0>\w(\w|\d|_)*)|\${(?P<name1>.*?)}')
 
     def visit_WS(self, node, children):
         return None
@@ -110,7 +110,8 @@ class UniShellVisitor(PTNodeVisitor):
         
         def replacer(matchObj):
             cctx = getCurrentContext()
-            return cctx["variables"][matchObj.group(1)].value
+            name = matchObj.group('name0') or matchObj.group('name1')
+            return cctx["variables"][name].value
 
         retVal = self.interpRegex.sub(replacer, s)
 

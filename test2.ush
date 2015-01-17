@@ -1,2 +1,2 @@
 set msg "hello world"
-echo $msg
+echo ${msg}.
