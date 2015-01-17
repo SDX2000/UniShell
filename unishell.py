@@ -4,6 +4,7 @@ import sys
 sys.path.extend(["lib"])
 
 import os
+import re
 import string
 import readline
 import collections
@@ -43,6 +44,8 @@ gContext = {
     , "variables"  : gVariables
 }
 
+def getCurrentContext():
+    return gContext
 
 grammar = """
     WS           = r'[ \t]+'
@@ -50,7 +53,7 @@ grammar = """
     number       = r'\d+\.\d+|\d+'
     ident        = r'\w(\w|\d|_)*'
     quoted_str   = r'"[^"]*"'
-    bare_str     = r'(\w|[.:*?/@~])*'
+    bare_str     = r'(\w|[.:*?/@~$])*'
     string       = quoted_str / bare_str
     expr         = string / number
     flag         = ("-" ident / "--" ident)
@@ -75,6 +78,8 @@ class Flag:
 
 class UniShellVisitor(PTNodeVisitor):
 
+    interpRegex = re.compile(r'\$(\w(\w|\d|_)*)')
+
     def visit_WS(self, node, children):
         return None
 
@@ -92,14 +97,27 @@ class UniShellVisitor(PTNodeVisitor):
         return Flag(children[0])
 
     def visit_quoted_str(self, node, children):
-        #print("STR NODE VALUE:", )
-        #print("STR CHILDREN:", children)
         if node.value:
             retVal = node.value[1:]
             retVal = retVal[:-1]
-            #print("__str:", retVal)
             return retVal
 
+    def visit_string(self, node, children):
+        #print("STRING NODE VALUE:", node.value)
+        #print("STRING CHILDREN:", children)
+
+        s = children[0]
+        
+        def replacer(matchObj):
+            cctx = getCurrentContext()
+            return cctx["variables"][matchObj.group(1)].value
+
+        retVal = self.interpRegex.sub(replacer, s)
+
+        #print("STRING RETURNING:", retVal)
+        return retVal
+        
+    
     def visit_prog(self, node, children):
         return children
 
