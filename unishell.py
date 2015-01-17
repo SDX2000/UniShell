@@ -22,7 +22,6 @@ def printBanner():
     print("")
 
 
-
 gCommandTable = {
     "stat"      : cmdStat
     , "cd"      : cmdChangeDirectory
@@ -59,9 +58,10 @@ grammar = """
     string       = quoted_str / bare_str
     expr         = string / number
     flag         = ("-" ident / "--" ident)
+    comment      = "#" r'.*'
     bare_command = ident (WS (flag / expr))*
     command      = "(" WS? bare_command WS? ")"
-    stmnt        = WS? (bare_command / command)? WS?
+    stmnt        = WS? (comment / bare_command / command)? comment? WS?
     prog         = (stmnt EOL)+ / (stmnt EOF)
 """
 
@@ -88,6 +88,9 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_stmnt(self, node, children):
         retVal = children[0] if children else None
         return retVal
+
+    def visit_comment(self, node, children):
+        return None
 
     def visit_flag(self, node, children):
         return Flag(children[0])
