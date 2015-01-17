@@ -141,7 +141,6 @@ def processProg(prog):
   
 """
 TODO:
- - handle KeyboardInterrupt
  - Be case insensitive
 
 Implement console features:-
@@ -190,6 +189,9 @@ def main(args):
             try:
                 cwd = os.getcwd()
                 inp = input(cwd + "> ")
+            except KeyboardInterrupt:
+                print("")
+                continue
             except EOFError:
                 print("")
                 break
