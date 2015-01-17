@@ -6,8 +6,10 @@ sys.path.extend(["lib"])
 import os
 import string
 import readline
-from commands import *
 from pprint import pprint
+
+from commands import *
+
 
 
 def printBanner():
@@ -16,12 +18,15 @@ def printBanner():
     print("")
 
 
-cmds = {"stat" : cmdStat
-        , "cd" : cmdChangeDirectory
-        , "exit" : cmdExit
-        , "quit" : cmdExit
-        , "cls" : cmdClearScreen
+gCommandTable = {
+    "stat"      : cmdStat
+    , "cd"      : cmdChangeDirectory
+    , "exit"    : cmdExit
+    , "quit"    : cmdExit
+    , "cls"     : cmdClearScreen
 }
+
+gVariables = {}
 
 """
 TODO:
@@ -35,8 +40,10 @@ Implement console features:-
 Implement language features:-
  - user defined prompts
  - strings, quoted strings, escapes, slicing, string operations
- - string interpolation "$x, $(time)". The $ sign is only required within strings for interpolation.
- - lists, a = [a b c], a.len()
+ - string interpolation "$x, ${x}H, $(time)". The $ sign is only required
+   within strings for interpolation.
+ - lists, a = [a b c], a.len(), a[0], a[1:]
+ - dictionaries d = {x:1 y:2}; d = (dict [a b c d])
  - conditionals if/else/elif, pattern matching with match
  - regular expression literals /abc/ig, =~
  - loops
@@ -56,6 +63,7 @@ Implement commands :-
  - rsync
  - exec $code
  - alias
+ - echo
 """
 def main(args):
     if len(args) > 1:
@@ -91,7 +99,7 @@ def processInput(cmdLine):
         return True
 
     try:
-        cmd = cmds[cmdLinePart[0]]
+        cmd = gCommandTable[cmdLinePart[0]]
     except KeyError:
         print("ERROR: Unkown command: {}".format(cmdLinePart[0]), file=sys.stderr)
         return True
