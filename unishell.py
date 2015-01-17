@@ -53,7 +53,7 @@ grammar = """
     number       = r'\d+\.\d+|\d+'
     ident        = r'\w(\w|\d|_)*'
     quoted_str   = r'"[^"]*"'
-    bare_str     = r'(\w|[.:*?/@~${}])*'
+    bare_str     = r'(\w|[.:*?/@~${}()])*'
     string       = quoted_str / bare_str
     expr         = string / number
     flag         = ("-" ident / "--" ident)
@@ -126,7 +126,6 @@ class UniShellVisitor(PTNodeVisitor):
         cmdName = children[0]
         args, flags = partition(lambda x: isinstance(x, Flag), children[1:])
 
-
         try:
             cmd = gCommandTable[cmdName]
         except KeyError:
@@ -142,21 +141,25 @@ class UniShellVisitor(PTNodeVisitor):
 
 visitor = UniShellVisitor(debug=debug)
 
-def processProg(prog):
-    #print("++++++++++processProg('{}') called".format(prog))
+def evaluate(prog):
+    #print("++++++++++evaluate('{}') called".format(prog))
+    parse_tree = parser.parse(prog)
+    result = visit_parse_tree(parse_tree, visitor)
+    return result
+
+
+def execute(prog):
     try:
-        parse_tree = parser.parse(prog)
-        result = visit_parse_tree(parse_tree, visitor)
-        if result:
-            if isinstance(result, collections.Iterable):
-                for elem in result:
-                    print(elem)
-            else:
-                print(result)
-        return result
+        result = evaluate(prog)
     except NoMatch as e:
         print("SYNTAX ERROR: ", e)
-
+        
+    if result:
+        if isinstance(result, collections.Iterable):
+            for elem in result:
+                print(elem)
+        else:
+            print(result)
   
 """
 TODO:
@@ -193,15 +196,16 @@ Implement commands :-
  - exec $code
  - alias
  - echo
+ - funcsave
 """
 def main(args):
     if len(args) > 1:
         if args[1] == "-c":
-            retVal = processProg(' '.join(args[2:]))
+            execute(' '.join(args[2:]))
         else:
             with open(args[1], "r") as f:
                 for line in f:
-                    retVal = processProg(line)
+                    execute(line)
     else:
         printBanner()
         while True:
@@ -214,7 +218,7 @@ def main(args):
             except EOFError:
                 print("")
                 break
-            retVal = processProg(inp)
+            execute(inp)
 
 
 if __name__ == '__main__':
