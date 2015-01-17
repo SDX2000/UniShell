@@ -33,6 +33,7 @@ gCommandTable = {
     , "env"     : cmdEnv
     , "echo"    : cmdEcho
     , "ls"      : cmdListDir
+    , "help"      : cmdHelp
 }
 
 gVariables = {

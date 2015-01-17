@@ -86,11 +86,13 @@ def cmdEnv(args, flags, context):
     print("\nExported Variables")
     print("==================")
     pprint(context["exportedVariables"])
-
-    print("\nCommands")
+    
+        
+def cmdHelp(args, flags, context):
+    """
+    Show commands
+    """
+    print("Commands")
     print("========")
     for cmdName in sorted(context["commands"].keys()):
         print("{}\t{}".format(cmdName, context["commands"][cmdName].__doc__))
-    
-        
-    
