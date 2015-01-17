@@ -32,19 +32,15 @@ gCommandTable = {
     , "env"     : cmdEnv
     , "echo"    : cmdEcho
     , "ls"      : cmdListDir
-    , "help"      : cmdHelp
+    , "help"    : cmdHelp
 }
 
 gVariables = {
 }
 
-gExportedVariables = {
-}
-
 gContext = {
     "commands" : gCommandTable
     , "variables"  : gVariables
-    , "exportedVariables"  : gExportedVariables
 }
 
 
@@ -62,7 +58,7 @@ grammar = """
     bare_command = ident (WS (flag / expr))*
     command      = "(" WS? bare_command WS? ")"
     stmnt        = WS? (comment / bare_command / command)? comment? WS?
-    prog         = (stmnt EOL)+ / (stmnt EOF)
+    prog         = (stmnt EOL)+ / (stmnt EOF) / EOF
 """
 
 parser = ParserPEG(grammar, "prog", skipws = False, debug=False)

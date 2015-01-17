@@ -57,15 +57,27 @@ def cmdEcho(args, flags, context):
 
 
 
+class Variable:
+    def __init__(self, name, value, exported=False):
+        self.name = name
+        self.value = value
+        self.exported = exported
+
+    def __repr__(self):
+        return "Variable(name='{}', value={}, exported={})".format(self.name, repr(self.value), self.exported)
+
 def cmdSet(args, flags, context):
     """
     Set variable. set [-x] name value
     """
     #print("args:{} flags:{}".format(args, flags))
-    if [flag for flag in flags if flag.name == "x"]:
-        context["exportedVariables"][args[0]] = args[1]
-    else:
-        context["variables"][args[0]] = args[1]
+
+    name = args[0]
+    value = args[1]
+    exported = len([flag for flag in flags if flag.name == "x"]) > 0
+
+    context["variables"][name] = Variable(name, value, exported)
+    
 
 def cmdListDir(args, flags, context):
     """
@@ -81,11 +93,9 @@ def cmdEnv(args, flags, context):
     """
     print("Variables")
     print("=========")
-    pprint(context["variables"])
-
-    print("\nExported Variables")
-    print("==================")
-    pprint(context["exportedVariables"])
+    for varName in sorted(context["variables"].keys()):
+        var = context["variables"][varName]
+        print("{}{} = {}".format("(exported) " if var.exported else "", var.name, var.value))
     
         
 def cmdHelp(args, flags, context):
