@@ -77,12 +77,13 @@ grammar = """
     quoted_str   = r'"[^"]*"'
     bare_str     = r'(\w|[.:*?/@~${}])*'
     string       = quoted_str / bare_str
-    expr         = cmd_interp / string / number
+    literal      = string / number
+    expr         = cmd_interp / literal
     flag         = ("-" ident / "--" ident)
     comment      = "#" r'.*'
     cmd          = ident (WS (flag / expr))*
     cmd_interp   = "$(" WS? cmd WS? ")"
-    stmnt        = WS? (comment / cmd / cmd_interp)? comment? WS?
+    stmnt        = WS? (comment / cmd / cmd_interp / literal)? comment? WS?
     prog         = (stmnt EOL)+ / (stmnt EOF) / EOF
 """
 
@@ -104,6 +105,9 @@ class CmdResult:
 
     def __repr__(self):
         return "CmdResult(value={})".format(repr(self.value))
+
+    def __str__(self):
+        return self.value
 
 def cmdResultPeeler(x):
     if isinstance(x, CmdResult):
@@ -263,11 +267,11 @@ def execute(prog):
         if result:
             if isinstance(result, collections.Iterable):
                 for r in result:
-                    if r.value:
-                        print(r.value)
+                    if r:
+                        print(str(r))
             else:
-                if result.value:
-                    print(result.value)
+                if result:
+                    print(str(result))
     except NoMatch as e:
         print("SYNTAX ERROR: ", e)
         
@@ -275,6 +279,7 @@ def execute(prog):
   
 """
 TODO:
+ - Do not check the value field of CmdResult instead use __str__
  - Be case insensitive
  - Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all
  non essential tokens and report the next required rule match (list all rules if there are multiple choices)
@@ -283,6 +288,7 @@ Implement console features:-
  - History
 
 Implement language features:-
+ - literals should return their value when used as a command
  - user defined prompts
  - strings, quoted strings, escapes, slicing, string operations
  - string interpolation "$x, ${x}H, $(time)". The $ sign is only required
