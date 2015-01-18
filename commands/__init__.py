@@ -31,7 +31,9 @@ def cmdChangeDirectory(args, flags, context):
     try:
         os.chdir(args[0])
     except IndexError:
-        return os.getcwd()
+        pass
+
+    return os.getcwd()
 
 
 def cmdExit(args, flags, context):
@@ -43,6 +45,7 @@ def cmdExit(args, flags, context):
     except IndexError:
         sys.exit(0)
 
+
 def cmdClearScreen(args, flags, context):
     """
     Clear screen
@@ -53,7 +56,9 @@ def cmdEcho(args, flags, context):
     """
     Echo arguments to output
     """
-    print(' '.join(args))
+    msg = ' '.join(args)
+    #print("ECHO>", msg)
+    return msg
 
 
 

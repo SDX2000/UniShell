@@ -1,0 +1,16 @@
+#Test command substiution
+
+#sanity check
+echo a
+echo "hello"
+echo a b
+echo "hello" "world"
+
+#test1
+echo $(echo a)
+
+#test2
+echo $(echo a) $(echo b)
+
+#test2
+echo $(echo "hello") $(echo "world")
