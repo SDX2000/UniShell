@@ -35,6 +35,8 @@ from commands import *
 
 debug = False
 version = "0.0.1"
+parser = None
+visitor = None
 
 def printBanner():
     print("UniShell Version {}".format(version))
@@ -73,21 +75,22 @@ grammar = """
     WS           = r'[ \t]+'
     EOL          = "\n"
     number       = r'\d+\.\d+|\d+'
-    ident        = r'\w(\w|\d|_)*'
+    ident        = r'[a-zA-Z_](\w|_)*'
     quoted_str   = r'"[^"]*"'
-    bare_str     = r'(\w|[.:*?/@~${}])*'
+    bare_str     = r'[a-zA-Z_.:*?/@~${}](\w|[.:*?/@~${}])*'
     string       = quoted_str / bare_str
     literal      = string / number
+    expr_cmd     = cmd / expr
     expr         = cmd_interp / literal
     flag         = ("-" ident / "--" ident)
     comment      = "#" r'.*'
     cmd          = ident (WS (flag / expr))*
     cmd_interp   = "$(" WS? cmd WS? ")"
-    stmnt        = WS? (comment / cmd / cmd_interp / literal)? comment? WS?
+    stmnt        = WS? (comment / expr_cmd)? comment? WS?
     prog         = (stmnt EOL)+ / (stmnt EOF) / EOF
 """
 
-parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
+
 
 def partition(pred, _list):
     return ([x for x in _list if not pred(x)], [x for x in _list if pred(x)])
@@ -129,6 +132,13 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("STMNT CHILDREN:", children)
         result = children[0] if children else None
         dbg("STMNT RETURNING:{}".format(repr(result)))
+        return result
+
+    def visit_number(self, node, children):
+        dbg("NUMBER NODE VALUE:", repr(node.value))
+        dbg("NUMBER CHILDREN:", children)
+        result = node.value
+        dbg("NUMBER RETURNING:{}".format(repr(result)))
         return result
 
     def visit_comment(self, node, children):
@@ -251,7 +261,6 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("CMD RETURNING:{}".format(repr(result)))
         return result
 
-visitor = UniShellVisitor(debug=debug)
 
 def evaluate(prog):
     dbg("++++evaluate('{}') called".format(prog))
@@ -265,7 +274,7 @@ def execute(prog):
         result = evaluate(prog)
         dbg("RESULT:", repr(result))
         if result:
-            if isinstance(result, collections.Iterable):
+            if type(result) is list:
                 for r in result:
                     if r:
                         print(str(r))
@@ -275,8 +284,7 @@ def execute(prog):
     except NoMatch as e:
         print("SYNTAX ERROR: ", e)
         
-    
-  
+
 def startRepl():
     printBanner()
     while True:
@@ -292,6 +300,12 @@ def startRepl():
         execute(inp)
         
 def main(args):
+    global parser
+    global visitor
+    
+    parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
+    visitor = UniShellVisitor(debug=debug)
+
     doRepl = True
     if args['-c']:
         doRepl = False

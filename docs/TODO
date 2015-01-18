@@ -21,6 +21,7 @@ Implement console features:-
  
 Implement language features:-
  - literals should return their value when used as a command
+ - Add hex and octal integer literals. Use separate float and integer literals
  - user defined prompts
  - strings, quoted strings, escapes, slicing, string operations
  - string interpolation "$x, ${x}H, $(time)". The $ sign is only required within strings for interpolation.
