@@ -37,6 +37,47 @@ debug = False
 version = "0.0.1"
 parser = None
 visitor = None
+gCommandTable = None
+gVariables = None
+gContext = None
+gInitDir = None
+
+def init():
+    global parser
+    global visitor
+    global gCommandTable
+    global gVariables
+    global gContext
+    global gInitDir
+
+    if not gInitDir:
+        gInitDir = os.getcwd()
+    else:
+        os.chdir(gInitDir)
+    
+    parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
+    visitor = UniShellVisitor(debug=debug)
+
+    gCommandTable = {
+        "stat"      : cmdStat
+        , "cd"      : cmdChangeDirectory
+        , "exit"    : cmdExit
+        , "quit"    : cmdExit
+        , "cls"     : cmdClearScreen
+        , "set"     : cmdSet
+        , "env"     : cmdEnv
+        , "echo"    : cmdEcho
+        , "ls"      : cmdListDir
+        , "help"    : cmdHelp
+    }
+
+    gVariables = {
+    }
+
+    gContext = {
+        "commands" : gCommandTable
+        , "variables"  : gVariables
+    }
 
 def printBanner():
     print("UniShell Version {}".format(version))
@@ -46,27 +87,6 @@ def printBanner():
 def dbg(*str, **kwargs):
     if debug:
         print(*str, **kwargs)
-
-gCommandTable = {
-    "stat"      : cmdStat
-    , "cd"      : cmdChangeDirectory
-    , "exit"    : cmdExit
-    , "quit"    : cmdExit
-    , "cls"     : cmdClearScreen
-    , "set"     : cmdSet
-    , "env"     : cmdEnv
-    , "echo"    : cmdEcho
-    , "ls"      : cmdListDir
-    , "help"    : cmdHelp
-}
-
-gVariables = {
-}
-
-gContext = {
-    "commands" : gCommandTable
-    , "variables"  : gVariables
-}
 
 def getCurrentContext():
     return gContext
@@ -86,10 +106,9 @@ grammar = """
     comment      = "#" r'.*'
     cmd          = ident (WS (flag / expr))*
     cmd_interp   = "$(" WS? cmd WS? ")"
-    stmnt        = WS? (comment / expr_cmd)? comment? WS?
+    stmnt        = WS? expr_cmd? WS? comment? WS?
     prog         = (stmnt EOL)+ / (stmnt EOF) / EOF
 """
-
 
 
 def partition(pred, _list):
@@ -101,21 +120,6 @@ class Flag:
         self.value = value
     def __repr__(self):
         return "Flag(name='{}', value={})".format(self.name, self.value)
-
-class CmdResult:
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return "CmdResult(value={})".format(repr(self.value))
-
-    def __str__(self):
-        return str(self.value)
-
-def cmdResultPeeler(x):
-    if isinstance(x, CmdResult):
-        return x.value
-    return x
 
 class UniShellVisitor(PTNodeVisitor):
 
@@ -189,7 +193,7 @@ class UniShellVisitor(PTNodeVisitor):
             else:
                 cmd = matchObj.group('cmd0')
                 if cmd:
-                   result = evaluate(cmd).value
+                   result = evaluate(cmd)
             dbg("replacer.result=", result)
             return result
 
@@ -213,17 +217,12 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("PROG RETURNING:{}".format(repr(result)))
         return result
 
-    
-
     def execCmd(self, cmdName, allArgs):
         args = flags = []
         
         if allArgs:
             args, flags = partition(lambda x: isinstance(x, Flag), allArgs)
 
-
-        args = list(map(cmdResultPeeler, args))
-            
         dbg("args:{} flags:{}".format(args, flags))
 
         result = ""
@@ -236,7 +235,7 @@ class UniShellVisitor(PTNodeVisitor):
                 print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
         except KeyError:
             print("ERROR: Unkown command: {}".format(cmdName), file=sys.stderr)
-        return CmdResult(result)
+        return result
 
     def visit_cmd_interp(self, node, children):
         dbg("CMD_INTERP NODE VALUE:", repr(node.value))
@@ -300,11 +299,7 @@ def startRepl():
         execute(inp)
         
 def main(args):
-    global parser
-    global visitor
-    
-    parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
-    visitor = UniShellVisitor(debug=debug)
+    init()
 
     doRepl = True
     if args['-c']:
@@ -314,9 +309,12 @@ def main(args):
     
     for arg in args['FILE']:
         doRepl = False
-        with open(arg, "r") as f:
-            for line in f:
-                execute(line)
+        try:
+            with open(arg, "r") as f:
+                for line in f:
+                    execute(line)
+        except FileNotFoundError as e:
+            print("ERROR: {}".format(e), file=sys.stderr)
                 
     if doRepl or args['--interactive']:
         startRepl()

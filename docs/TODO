@@ -5,11 +5,6 @@
 ======
  TODO
 ======
-
- - Let command be an expr
- - Remove CmdResult class. Use generic python objects instead (like string and numbers) or create custom pipeline objects to represent command specific information
-   - use __str__ to convert objects into terminal output for the time being
- 
  - Be case insensitive
  - Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all non essential tokens and report the next required rule match (list all rules if there are multiple choices)
  - Test on cygwin/mintty in addition to cmd.exe on windows
@@ -59,7 +54,11 @@ Automatic variables :-
 ======
  DONE
 ======
-
+- Let command be an expr
+- Remove CmdResult class. Use generic python objects instead (like string and numbers) or create custom pipeline objects to represent command specific information
+   - use __str__ to convert objects into terminal output for the time being
+   
 ==========
  REJECTED
 ==========
+ X Reset interpreter between scripts. REASON: This is not required a separate instance of the interpreter should be launched and the script should be run inside it if a new environment is required. Running multiple scripts in the same env can be useful. REVISIT LATER: Maybe
