@@ -26,6 +26,7 @@ import string
 import readline
 import collections
 
+from os import path
 from pprint import pprint
 from docopt import docopt
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
@@ -66,7 +67,10 @@ class Context:
         self.commands[name] = command
 
     def delCmd(self, name):
-        del self.commands[name]
+        try:
+            del self.commands[name]
+        except KeyError:
+            pass
 
     def getVarNames(self):
         return sorted(self.variables.keys())
@@ -78,7 +82,10 @@ class Context:
         self.variables[name] = Variable(name, value, exported)
 
     def delVar(self, name):
-        del self.variables[name]
+        try:
+            del self.variables[name]
+        except KeyError:
+            pass
 
 def init():
     global parser
@@ -222,7 +229,10 @@ class UniShellVisitor(PTNodeVisitor):
             name = matchObj.group('var0') or matchObj.group('var1')
             result = ""
             if name:
-                result = cctx.getVar(name).value
+                try:
+                    result = cctx.getVar(name).value
+                except KeyError:
+                    pass
             else:
                 cmd = matchObj.group('cmd0')
                 if cmd:
@@ -343,11 +353,21 @@ def main(args):
     for arg in args['FILE']:
         doRepl = False
         try:
+            scriptPath = path.abspath(arg)
+            scriptDir  = path.dirname(scriptPath)
+            scriptName = path.basename(arg)
+            
+            getCtx().setVar("SCRIPT_PATH", scriptPath)
+            getCtx().setVar("SCRIPT_DIR", scriptDir)
+            getCtx().setVar("SCRIPT_NAME", scriptName)
+            
             with open(arg, "r") as f:
                 for line in f:
                     execute(line)
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
+        finally:
+            getCtx().delVar("SCRIPT_DIR")
                 
     if doRepl or args['--interactive']:
         startRepl()

@@ -15,7 +15,7 @@ Implement console features:-
  - Find/implement pure python implementation of readline and ncurses for windows.
  
 Implement language features:-
- - literals should return their value when used as a command
+ 
  - Add hex and octal integer literals. Use separate float and integer literals
  - user defined prompts
  - strings, quoted strings, escapes, slicing, string operations
@@ -42,9 +42,10 @@ Implement commands :-
  - exec $code
  - alias
  - echo
- - funcsave
+ - funcsave, funced, vared
  - basename
  - dirname
+ - pushd, popd, nextd, prevd
  - choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required)
  - map, filter, reduce, zip etc. Look at the python pipes library, itertools module and Haskell Lists module for inspiration
  
@@ -57,7 +58,7 @@ Automatic variables :-
 - Let command be an expr
 - Remove CmdResult class. Use generic python objects instead (like string and numbers) or create custom pipeline objects to represent command specific information
    - use __str__ to convert objects into terminal output for the time being
-   
+- literals should return their value when used as a command
 ==========
  REJECTED
 ==========
