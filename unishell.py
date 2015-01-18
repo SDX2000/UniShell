@@ -37,19 +37,56 @@ debug = False
 version = "0.0.1"
 parser = None
 visitor = None
-gCommandTable = None
-gVariables = None
+
 gContext = None
 gInitDir = None
+
+class Variable:
+    def __init__(self, name, value, exported=False):
+        self.name = name
+        self.value = value
+        self.exported = exported
+
+    def __repr__(self):
+        return "Variable(name='{}', value={}, exported={})".format(self.name, repr(self.value), self.exported)
+
+
+class Context:
+    def __init__(self):
+        self.variables = {}
+        self.commands = {}
+
+    def getCmdNames(self):
+        return sorted(self.commands.keys())
+
+    def getCmd(self, name):
+        return self.commands[name]
+
+    def setCmd(self, name, command):
+        self.commands[name] = command
+
+    def delCmd(self, name):
+        del self.commands[name]
+
+    def getVarNames(self):
+        return sorted(self.variables.keys())
+    
+    def getVar(self, name):
+        return self.variables[name]
+
+    def setVar(self, name, value, exported=False):
+        self.variables[name] = Variable(name, value, exported)
+
+    def delVar(self, name):
+        del self.variables[name]
 
 def init():
     global parser
     global visitor
-    global gCommandTable
-    global gVariables
     global gContext
     global gInitDir
 
+    dbg("Init called")
     if not gInitDir:
         gInitDir = os.getcwd()
     else:
@@ -58,26 +95,22 @@ def init():
     parser = ParserPEG(grammar, "prog", skipws = False, debug=debug)
     visitor = UniShellVisitor(debug=debug)
 
-    gCommandTable = {
-        "stat"      : cmdStat
-        , "cd"      : cmdChangeDirectory
-        , "exit"    : cmdExit
-        , "quit"    : cmdExit
-        , "cls"     : cmdClearScreen
-        , "set"     : cmdSet
-        , "env"     : cmdEnv
-        , "echo"    : cmdEcho
-        , "ls"      : cmdListDir
-        , "help"    : cmdHelp
-    }
+    gContext = Context()
 
-    gVariables = {
-    }
+    gContext.setCmd("stat", cmdStat)
+    gContext.setCmd("cd",   cmdChangeDirectory)
+    gContext.setCmd("exit", cmdExit)
+    gContext.setCmd("quit", cmdExit)
+    gContext.setCmd("cls",  cmdClearScreen)
+    gContext.setCmd("set",  cmdSet)
+    gContext.setCmd("env",  cmdEnv)
+    gContext.setCmd("echo", cmdEcho)
+    gContext.setCmd("ls",   cmdListDir)
+    gContext.setCmd("help", cmdHelp)
 
-    gContext = {
-        "commands" : gCommandTable
-        , "variables"  : gVariables
-    }
+    gContext.setVar("INIT_DIR", gInitDir)
+
+    
 
 def printBanner():
     print("UniShell Version {}".format(version))
@@ -88,7 +121,7 @@ def dbg(*str, **kwargs):
     if debug:
         print(*str, **kwargs)
 
-def getCurrentContext():
+def getCtx():
     return gContext
 
 grammar = """
@@ -185,11 +218,11 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("STRING CHILDREN:", children)
 
         def replacer(matchObj):
-            cctx = getCurrentContext()
+            cctx = getCtx()
             name = matchObj.group('var0') or matchObj.group('var1')
             result = ""
             if name:
-                result = cctx["variables"][name].value
+                result = cctx.getVar(name).value
             else:
                 cmd = matchObj.group('cmd0')
                 if cmd:
@@ -228,7 +261,7 @@ class UniShellVisitor(PTNodeVisitor):
         result = ""
 
         try:
-            cmd = gCommandTable[cmdName]
+            cmd = getCtx().getCmd(cmdName)
             try:
                 result = cmd(args, flags, gContext)
             except Exception as e:
