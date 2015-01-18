@@ -76,7 +76,10 @@ class Context:
         return sorted(self.variables.keys())
     
     def getVar(self, name):
-        return self.variables[name]
+        return self.variables[name].value
+
+    def isExported(self, varName):
+        return self.variables[varName].exported
 
     def setVar(self, name, value, exported=False):
         self.variables[name] = Variable(name, value, exported)
@@ -230,7 +233,7 @@ class UniShellVisitor(PTNodeVisitor):
             result = ""
             if name:
                 try:
-                    result = cctx.getVar(name).value
+                    result = cctx.getVar(name)
                 except KeyError:
                     pass
             else:
@@ -367,7 +370,9 @@ def main(args):
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:
+            getCtx().delVar("SCRIPT_PATH")
             getCtx().delVar("SCRIPT_DIR")
+            getCtx().delVar("SCRIPT_NAME")
                 
     if doRepl or args['--interactive']:
         startRepl()

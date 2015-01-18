@@ -89,8 +89,8 @@ def cmdEnv(args, flags, context):
     print("Variables")
     print("=========")
     for varName in context.getVarNames():
-        var = context.getVar(varName)
-        print("{}{} = {}".format("(exported) " if var.exported else "", var.name, var.value))
+        value = context.getVar(varName)
+        print("{}{}={}".format("(exported) " if context.isExported(varName) else "", varName, value))
     
         
 def cmdHelp(args, flags, context):

@@ -1,7 +1,13 @@
 ===========
  TODO NEXT
 ===========
+- redirection
+- external commands, set search paths
+- conditionals if/else/elif, pattern matching with match
+- loops
+- lists, a = [a b c], a.len(), a[0], a[1:]
 
+ 
 ======
  TODO
 ======
@@ -20,11 +26,8 @@ Implement language features:-
  - user defined prompts
  - strings, quoted strings, escapes, slicing, string operations
  - string interpolation "$x, ${x}H, $(time)". The $ sign is only required within strings for interpolation.
- - lists, a = [a b c], a.len(), a[0], a[1:]
  - dictionaries d = {x:1 y:2}; d = (dict [a b c d])
- - conditionals if/else/elif, pattern matching with match
  - regular expression literals /abc/ig, =~
- - loops
  - numbers, (num x), (str n)
  - wildcards *,**,?
  - functions
@@ -32,8 +35,7 @@ Implement language features:-
  - command substitution (pwd)
  - exceptions (try, catch, finally)
  - pipes
- - redirection
- - external commands, set search paths
+ 
  
 Implement commands :-
  - ls
@@ -55,6 +57,8 @@ Automatic variables :-
 ======
  DONE
 ======
+- Context.isExported(varName)
+- Context.getVar() should return the value of the variable instead of the Variable class
 - Let command be an expr
 - Remove CmdResult class. Use generic python objects instead (like string and numbers) or create custom pipeline objects to represent command specific information
    - use __str__ to convert objects into terminal output for the time being
