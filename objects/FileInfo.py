@@ -1,4 +1,3 @@
-
 import os
 import re
 import inspect
@@ -61,6 +60,5 @@ class FileInfo(PipelineObject):
     @visible()
     def dirName(self):
         return path.dirname(self._filePath)
-
     
 

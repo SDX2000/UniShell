@@ -1,0 +1,64 @@
+===========
+ TODO NEXT
+===========
+
+======
+ TODO
+======
+
+ - Let command be an expr
+ - Remove CmdResult class. Use generic python objects instead (like string and numbers) or create custom pipeline objects to represent command specific information
+   - use __str__ to convert objects into terminal output for the time being
+ 
+ - Be case insensitive
+ - Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all non essential tokens and report the next required rule match (list all rules if there are multiple choices)
+ - Test on cygwin/mintty in addition to cmd.exe on windows
+
+Implement console features:-
+ - Autocomplete
+ - History
+ - Find/implement pure python implementation of readline and ncurses for windows.
+ 
+Implement language features:-
+ - literals should return their value when used as a command
+ - user defined prompts
+ - strings, quoted strings, escapes, slicing, string operations
+ - string interpolation "$x, ${x}H, $(time)". The $ sign is only required within strings for interpolation.
+ - lists, a = [a b c], a.len(), a[0], a[1:]
+ - dictionaries d = {x:1 y:2}; d = (dict [a b c d])
+ - conditionals if/else/elif, pattern matching with match
+ - regular expression literals /abc/ig, =~
+ - loops
+ - numbers, (num x), (str n)
+ - wildcards *,**,?
+ - functions
+ - variables, scopes, persistence (use json/sqlite?), x = 10, print x
+ - command substitution (pwd)
+ - exceptions (try, catch, finally)
+ - pipes
+ - redirection
+ - external commands, set search paths
+ 
+Implement commands :-
+ - ls
+ - copy
+ - rsync
+ - exec $code
+ - alias
+ - echo
+ - funcsave
+ - basename
+ - dirname
+ - choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required)
+ - map, filter, reduce, zip etc. Look at the python pipes library, itertools module and Haskell Lists module for inspiration
+ 
+Automatic variables :-
+ - SCRIPT_DIR
+ 
+======
+ DONE
+======
+
+==========
+ REJECTED
+==========

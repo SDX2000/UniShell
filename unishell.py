@@ -107,7 +107,7 @@ class CmdResult:
         return "CmdResult(value={})".format(repr(self.value))
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
 def cmdResultPeeler(x):
     if isinstance(x, CmdResult):
@@ -263,7 +263,7 @@ def evaluate(prog):
 def execute(prog):
     try:
         result = evaluate(prog)
-        dbg("RESULT:", result)
+        dbg("RESULT:", repr(result))
         if result:
             if isinstance(result, collections.Iterable):
                 for r in result:
@@ -277,52 +277,6 @@ def execute(prog):
         
     
   
-"""
-TODO:
- - Do not check the value field of CmdResult instead use __str__
- - Be case insensitive
- - Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all
- non essential tokens and report the next required rule match (list all rules if there are multiple choices)
-Implement console features:-
- - Autocomplete
- - History
-
-Implement language features:-
- - literals should return their value when used as a command
- - user defined prompts
- - strings, quoted strings, escapes, slicing, string operations
- - string interpolation "$x, ${x}H, $(time)". The $ sign is only required
-   within strings for interpolation.
- - lists, a = [a b c], a.len(), a[0], a[1:]
- - dictionaries d = {x:1 y:2}; d = (dict [a b c d])
- - conditionals if/else/elif, pattern matching with match
- - regular expression literals /abc/ig, =~
- - loops
- - numbers, (num x), (str n)
- - wildcards *,**,?
- - functions
- - variables, scopes, persistence (use json/sqlite?), x = 10, print x
- - command substitution (pwd)
- - exceptions (try, catch, finally)
- - pipes
- - redirection
- - external commands, set search paths
- 
-Implement commands :-
- - ls
- - copy
- - rsync
- - exec $code
- - alias
- - echo
- - funcsave
- - basename
- - dirname
- 
-Automatic variables :-
- - SCRIPT_DIR
-"""
-
 def startRepl():
     printBanner()
     while True:
