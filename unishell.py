@@ -169,13 +169,15 @@ class UniShellVisitor(PTNodeVisitor):
         def replacer(matchObj):
             cctx = getCurrentContext()
             name = matchObj.group('var0') or matchObj.group('var1')
-            
+            result = ""
             if name:
-                return cctx["variables"][name].value
-
-            cmd = matchObj.group('cmd0')
-            if cmd:
-               return evaluate(cmd)
+                result = cctx["variables"][name].value
+            else:
+                cmd = matchObj.group('cmd0')
+                if cmd:
+                   result = evaluate(cmd).value
+            dbg("replacer.result=", result)
+            return result
 
         string = children[0]
         result = self.interpRegex.sub(replacer, string)
@@ -193,7 +195,7 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_prog(self, node, children):
         dbg("PROG NODE VALUE:", repr(node.value))
         dbg("PROG CHILDREN:", repr(children))
-        result = children
+        result = children[0]
         dbg("PROG RETURNING:{}".format(repr(result)))
         return result
 
@@ -274,7 +276,8 @@ def execute(prog):
 """
 TODO:
  - Be case insensitive
-
+ - Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all
+ non essential tokens and report the next required rule match (list all rules if there are multiple choices)
 Implement console features:-
  - Autocomplete
  - History
