@@ -195,7 +195,7 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_prog(self, node, children):
         dbg("PROG NODE VALUE:", repr(node.value))
         dbg("PROG CHILDREN:", repr(children))
-        result = children[0]
+        result = children[0] if children else None
         dbg("PROG RETURNING:{}".format(repr(result)))
         return result
 

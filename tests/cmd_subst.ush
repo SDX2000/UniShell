@@ -11,7 +11,8 @@ echo $(echo a)
 
 #
 echo $(echo a) $(echo b)
+echo $(echo "hello") $(echo "world")
 
 #Subst inside quotes
-#echo $(echo "hello") $(echo "world")
-#echo "$(echo a)"
+
+echo "$(echo a)"
