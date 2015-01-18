@@ -1,4 +1,5 @@
 # Todo next
+* Use rule names as indices to the childrens array in visit_* functions instead of numbers
 * redirection
 * pipes
 * external commands, set search paths
@@ -13,7 +14,8 @@
 * History
 * Find/implement pure python implementation of readline and ncurses for windows.
 ### Misc
-* Add an option to echo commands as they are being executed. $(setopt echo on)
+* Add an option to echo commands as they are being executed. $(setopt echo on). Create a separate option variables space.
+* choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
 
 ## Implement language features
 ### Literals
@@ -21,7 +23,9 @@
 * string escapes, string operations
 * dictionaries d = {x:1 y:2}; d = (dict [a b c d])
 * regular expression literals /abc/ig, =~
+* lambdas: \x y -> x == y; \ -> $a; \x -> len x
 * wildcards *,**,?,{}
+
 ### Language constructs
 * constants
 * slicing
@@ -30,6 +34,16 @@
 * exceptions (try, catch, finally)
 * pattern matching with match
 * Be case insensitive
+* structs?
+<code>
+struct Person:
+    Name #Indentation acts as a comma
+    Age
+    Email
+struct Point: x, y
+</code>
+* namespaces?
+
 
 ## Parsing
 * Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all non essential tokens and report the next required rule match (list all rules if there are multiple choices)
@@ -46,8 +60,7 @@
 * basename
 * dirname
 * pushd, popd, nextd, prevd
-* choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required)
-* map, filter, reduce, zip etc. Look at the python pipes library, itertools module and Haskell Lists module for inspiration
+* map, filter, reduce, zip etc. Look at the python pipes library, itertools module, functools and Haskell Lists module for inspiration
  
 ## Automatic variables
 * user defined prompts 

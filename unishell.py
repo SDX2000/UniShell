@@ -33,6 +33,7 @@ from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
 
 from commands import *
+from decorators import logfn
 
 debug = False
 version = "0.0.1"
@@ -214,7 +215,7 @@ class UniShellVisitor(PTNodeVisitor):
         result = node.value
         dbg("BARE STRING RETURNING:{}".format(repr(result)))
         return result
-
+    
     def visit_ident(self, node, children):
         dbg("IDENT NODE VALUE:", repr(node.value))
         dbg("IDENT CHILDREN:", children)
@@ -307,6 +308,7 @@ class UniShellVisitor(PTNodeVisitor):
 
         dbg("CMD RETURNING:{}".format(repr(result)))
         return result
+        
 
 
 def evaluate(prog):
