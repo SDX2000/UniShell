@@ -2,6 +2,5 @@ echo "================"
 echo $SCRIPT_NAME
 echo "================"
 
-1
-123
-echo 123
+echo a; echo b;
+echo c; echo d

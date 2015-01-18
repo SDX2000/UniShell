@@ -1,3 +1,7 @@
+echo "================"
+echo $SCRIPT_NAME
+echo "================"
+
 stat unishell.py
 cd commands
 stat __init__.py

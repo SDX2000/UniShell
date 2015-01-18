@@ -136,7 +136,7 @@ def getCtx():
 
 grammar = """
     WS           = r'[ \t]+'
-    EOL          = "\n"
+    EOL          = "\n"/";"
     number       = r'\d+\.\d+|\d+'
     ident        = r'[a-zA-Z_](\w|_)*'
     quoted_str   = r'"[^"]*"'
@@ -150,7 +150,7 @@ grammar = """
     cmd          = ident (WS (flag / expr))*
     cmd_interp   = "$(" WS? cmd WS? ")"
     stmnt        = WS? expr_cmd? WS? comment? WS?
-    prog         = (stmnt EOL)+ / (stmnt EOF) / EOF
+    prog         = (stmnt EOL)* stmnt? EOF
 """
 
 
@@ -240,6 +240,8 @@ class UniShellVisitor(PTNodeVisitor):
                 cmd = matchObj.group('cmd0')
                 if cmd:
                    result = evaluate(cmd)
+                   result = ''.join([str(r) for r in result])
+                       
             dbg("replacer.result=", result)
             return result
 
@@ -259,7 +261,7 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_prog(self, node, children):
         dbg("PROG NODE VALUE:", repr(node.value))
         dbg("PROG CHILDREN:", repr(children))
-        result = children[0] if children else None
+        result = children
         dbg("PROG RETURNING:{}".format(repr(result)))
         return result
 
@@ -319,7 +321,7 @@ def execute(prog):
         result = evaluate(prog)
         dbg("RESULT:", repr(result))
         if result:
-            if type(result) is list:
+            if issubclass(type(result), list):
                 for r in result:
                     if r:
                         print(str(r))

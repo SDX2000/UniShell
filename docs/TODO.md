@@ -8,10 +8,13 @@
 
 # Todo
 ## Implement console features
+### Editing
 * Autocomplete
 * History
 * Find/implement pure python implementation of readline and ncurses for windows.
- 
+### Misc
+* Add an option to echo commands as they are being executed. $(setopt echo on)
+
 ## Implement language features
 ### Literals
 * Add hex and octal integer literals. Use separate float and integer literals
@@ -20,6 +23,7 @@
 * regular expression literals /abc/ig, =~
 * wildcards *,**,?,{}
 ### Language constructs
+* constants
 * slicing
 * functions
 * variable scopes, persistence (use json/sqlite?)

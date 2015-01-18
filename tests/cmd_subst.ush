@@ -1,4 +1,7 @@
-#Test command substiution
+echo "================"
+echo $SCRIPT_NAME
+echo "================"
+
 
 #sanity check
 echo a
