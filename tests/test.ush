@@ -1,4 +1,3 @@
-cd ..
 stat unishell.py
 cd commands
 stat __init__.py

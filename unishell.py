@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+"""UniShell
+
+Usage:
+  unishell [(-t | --trace)] [(-i | --interactive)] [(-c COMMAND) ...] [FILE ...]
+  unishell (-h | --help)
+  unishell --version
+
+Options:
+  -c                 Execute COMMAND
+  FILE               UniShell Script file (usually *.ush)
+  -i --interactive   Start interactive shell
+  -t --trace         Print debug trace messages.
+  -h --help          Show this screen.
+  --version          Show version.
+"""
 import sys
 import os
 
@@ -12,15 +27,17 @@ import readline
 import collections
 
 from pprint import pprint
+from docopt import docopt
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
 
 from commands import *
 
 debug = False
+version = "0.0.1"
 
 def printBanner():
-    print("UniShell Version 0.0.1")
+    print("UniShell Version {}".format(version))
     print("Copyright (C) Sandeep Datta, 2015")
     print("")
 
@@ -157,7 +174,7 @@ class UniShellVisitor(PTNodeVisitor):
                 return cctx["variables"][name].value
 
             cmd = matchObj.group('cmd0')
-            if cmdName:
+            if cmd:
                return evaluate(cmd)
 
         string = children[0]
@@ -290,30 +307,47 @@ Implement commands :-
  - alias
  - echo
  - funcsave
+ - basename
+ - dirname
+ 
+Automatic variables :-
+ - SCRIPT_DIR
 """
+
+def startRepl():
+    printBanner()
+    while True:
+        try:
+            cwd = os.getcwd()
+            inp = input(cwd + "> ")
+        except KeyboardInterrupt:
+            print("")
+            continue
+        except EOFError:
+            print("")
+            break
+        execute(inp)
+        
 def main(args):
-    if len(args) > 1:
-        if args[1] == "-c":
-            execute(' '.join(args[2:]))
-        else:
-            for arg in args[1:]:
-                with open(arg, "r") as f:
-                    for line in f:
-                        execute(line)
-    else:
-        printBanner()
-        while True:
-            try:
-                cwd = os.getcwd()
-                inp = input(cwd + "> ")
-            except KeyboardInterrupt:
-                print("")
-                continue
-            except EOFError:
-                print("")
-                break
-            execute(inp)
+    doRepl = True
+    if args['-c']:
+        doRepl = False
+        for cmd in args['COMMAND']:
+            execute(cmd)
+    
+    for arg in args['FILE']:
+        doRepl = False
+        with open(arg, "r") as f:
+            for line in f:
+                execute(line)
+                
+    if doRepl or args['--interactive']:
+        startRepl()
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    args = docopt(__doc__, version=version)
+    if args['--trace']:
+        debug = True
+    dbg("Docopt args:{}".format(repr(args)))
+    main(args)
