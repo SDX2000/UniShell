@@ -17,7 +17,7 @@
 * lambdas: \x y -> x == y; \ -> $a; \x -> len x
 * wildcards *,**,?,{}
 
-### Language constructs
+### Language
 * Operators
     * Arithmetic: + - * / %
     * Boolean: and or not
@@ -35,7 +35,7 @@
     * Syntax examples
         * cat abc.txt | !grep "foobar"
         * !cmd  < abc.txt >def.txt 2>&1
-        * 
+
     
     
 * Conditionals if / else / elif. Model it after python. External commands which fail should thow a BadExit. Need to handle BadExits asynchronously for non-blocking commands, may be a callbacks can be provided to check for success/errors (take inspiration from JQuery).
@@ -58,9 +58,16 @@
     * Let numbers be value types and strings be immutable (use COW (Copy on write) when someone tries to modify them)
 * namespaces?
 * modules (import abc)
+    
+* Interop
+    * Python
+        * import python modules
+        * Execute python code
+    * C
+        * Load shared libraries and call functions
 
 ## Implement console features
-### Editing
+### Editing/Usage
 * Autocomplete
 * History
 * Find/implement pure python implementation of readline and ncurses for windows.
@@ -84,6 +91,7 @@
 * dirname
 * pushd, popd, nextd, prevd
 * map, filter, reduce, zip etc. Look at the python pipes library, itertools module, functools and Haskell Lists module for inspiration
+* getopt, docopt
  
 ## Automatic variables
 * user defined prompts 

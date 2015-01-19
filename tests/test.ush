@@ -1,9 +1,15 @@
+#!/usr/bin/env unishell
 echo "================"
 echo $SCRIPT_NAME
 echo "================"
 
+set START_DIR $(cd)
+echo "START_DIR=$START_DIR"
+
+cd $SCRIPT_DIR
+cd ..
 stat unishell.py
 cd commands
 stat __init__.py
-cd ..
+cd $START_DIR
 #exit 1

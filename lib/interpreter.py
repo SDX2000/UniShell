@@ -1,4 +1,5 @@
 import re
+import sys
 
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
