@@ -63,7 +63,12 @@ def cmdEcho(args, flags, context):
 
 def cmdSet(args, flags, context):
     """
-    Set variable. set [-x] name value
+    Set variable.
+
+    Syntax:-
+        set [-x] name value
+
+        -x    Export variable to child processes
     """
     #print("args:{} flags:{}".format(args, flags))
 
@@ -76,7 +81,11 @@ def cmdSet(args, flags, context):
 
 def cmdListDir(args, flags, context):
     """
-    List contents of target directory
+    List contents of target directory. If no directory is specified use
+    current directory as target.
+
+    Syntax: -
+        ls [target_dir]
     """
     target = (args[0] if args else None) or '.'
     for x in os.listdir(target):
