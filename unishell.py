@@ -14,14 +14,12 @@ Options:
   -h --help          Show this screen.
   --version          Show version.
 """
-import sys
-import os
 
-moduleBaseDir = os.path.dirname(__file__)
-sys.path.extend([os.path.join(moduleBaseDir, "lib")])
+
 
 import os
 import re
+import sys
 import string
 import readline
 import collections
@@ -33,7 +31,6 @@ from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
 
 from commands import *
-from decorators import logfn
 
 debug = False
 version = "0.0.1"

@@ -1,5 +1,5 @@
 # Todo next
-* Use rule names as indices to the childrens array in visit_* functions instead of numbers
+* Generate custom ASG
 * redirection
 * pipes
 * external commands, set search paths
@@ -8,16 +8,10 @@
 * lists, a = [a b c], len a, a[0], a[1:]
 
 # Todo
-## Implement console features
-### Editing
-* Autocomplete
-* History
-* Find/implement pure python implementation of readline and ncurses for windows.
-### Misc
-* Add an option to echo commands as they are being executed. $(setopt echo on). Create a separate option variables space.
-* choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
-
 ## Implement language features
+### ASG - Abstract Semantic Graph
+* Generate custom ASG (Abstract semantic graph) using the node visitor. ASG nodes should be callables, executing the root node should start an inorder execution from left to right. Non leaf nodes may also execute code and/or aggregate the results of their child nodes.
+
 ### Literals
 * Add hex and octal integer literals. Use separate float and integer literals
 * string escapes, string operations
@@ -37,12 +31,23 @@
 * structs?
 <code>
 struct Person:
-    Name #Indentation acts as a comma
+    Name #Indentation acts as a comma (but what do we do with newlines (which act like a semicolons)?)
     Age
     Email
 struct Point: x, y
 </code>
+* value types / reference types: Everything is a value type in shells?
+** Let numbers be value types and strings be immutable (use COW (Copy on write) when someone tries to modify them)
 * namespaces?
+
+## Implement console features
+### Editing
+* Autocomplete
+* History
+* Find/implement pure python implementation of readline and ncurses for windows.
+### Misc
+* Add an option to echo commands as they are being executed. $(setopt echo on). Create a separate option variables space.
+* choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
 
 
 ## Parsing
@@ -81,3 +86,5 @@ struct Point: x, y
 
 # Rejected
 * Reset interpreter between scripts. REASON: This is not required a separate instance of the interpreter should be launched and the script should be run inside it if a new environment is required. Running multiple scripts in the same env can be useful. REVISIT LATER: Maybe
+
+* Use rule names as indices to the childrens array in visit_* functions instead of numbers. REASON: This will not work since the lower nodes may not return a SemanticActions dictionary. The subnodes may decide to return custom data instead.

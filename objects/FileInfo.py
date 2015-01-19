@@ -1,17 +1,11 @@
 import os
 import re
 import inspect
-
-if __name__ == "__main__":
-    import sys
-    sys.path.extend(["../lib"])
-    from PipelineObject import PipelineObject
-else:
-    from .PipelineObject import PipelineObject
-
 from os import path
 from datetime import datetime
-from formatters import *
+
+from .PipelineObject import PipelineObject
+from lib.decorators import visible
 
 def test():
     fi = FileInfo("FileInfo.py")
