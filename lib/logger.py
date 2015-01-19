@@ -1,5 +1,18 @@
 import sys
-    
+
+debugLevel = 0
+
+def dbg(*str, **kwargs):
+    if debugLevel:
+        print(*str, **kwargs)
+
+def setDebugLevel(level):
+    global debugLevel
+    debugLevel = level
+
+def getDebugLevel():
+    return debugLevel
+
 def format_arg_value(arg_val):
     """ Return a string representing a (name, value) pair.
     
