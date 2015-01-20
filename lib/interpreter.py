@@ -26,6 +26,11 @@ grammar = """
     prog         = (stmnt EOL)* stmnt? EOF
 """
 
+#BUG getDebugLevel() is being called even before main has a chance to set it
+gDebug = getDebugLevel() > 0
+gParser = ParserPEG(grammar, "prog", skipws = False, debug = gDebug)
+
+
 class Flag:
     def __init__(self, name, value=1):
         self.name = name
@@ -33,14 +38,91 @@ class Flag:
     def __repr__(self):
         return "Flag(name={}, value={})".format(self.name, self.value)
 
-class UniShellVisitor(PTNodeVisitor):
+#A prog is a list of commands or literals
+class Prog:
+    def __init__(self, elements):
+        self.elements = elements
 
+    def __call__(self, context):
+        result = []
+        for elem in self.elements:
+            if callable(elem):
+                result.append(elem(context))
+            else:
+                result.append(elem)
+        dbg("Prog result:", result)
+        return result
+
+    def __repr_(self):
+        return repr(self.elements)
+
+class Command:
+    def __init__(self, cmdName, allArgs):
+        if not cmdName or type(cmdName) is not str:
+            raise Exception("Bad command name:{}".format(repr(cmdName)))
+        
+        self.cmdName = cmdName
+        
+        if allArgs:
+            self.args, self.flags = partition(lambda x: isinstance(x, Flag), allArgs)
+        else:
+            self.args = self.flags = []
+
+        dbg("args:{} flags:{}".format(self.args, self.flags))
+    
+    def __call__(self, context):
+        result = ""
+
+        try:
+            cmd = context.getCmd(self.cmdName)
+            try:
+                result = cmd(self.args, self.flags, context)
+            except Exception as e:
+                print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
+        except KeyError:
+            print("ERROR: Unkown command: {}".format(self.cmdName), file=sys.stderr)
+        return result
+
+    def __repr__(self):
+        return "Command({}, args={}, flags={})".format(self.cmdName, self.args, self.flags)
+
+class String:
+    #TODO: Incorporate this regex into the main grammar
     interpRegex = re.compile(r'\$(?P<var0>\w(\w|\d|_)*)|\${(?P<var1>.*?)}|\$\((?P<cmd0>.*?)\)')
+    
+    def __init__(self, string):
+        if not type(string) is str:
+            raise TypeError("Argument is not a string")
+        self.string = string
+    
+    def __call__(self, context):
+        def replacer(matchObj):
+            name = matchObj.group('var0') or matchObj.group('var1')
+            result = ""
+            if name:
+                try:
+                    result = context.getVar(name)
+                except KeyError:
+                    pass
+            else:
+                cmd = matchObj.group('cmd0')
+                if cmd:
+                   prog = parse(cmd)
+                   result = prog(context)[0]
+                       
+            dbg("replacer.result=", result)
+            return result
 
-    def __init__(self, interpreter, context, defaults=True, debug=False):
-        super().__init__(defaults, debug)
-        self.context = context
-        self.interpreter = interpreter
+        result = self.interpRegex.sub(replacer, self.string)
+
+        dbg("STRING RETURNING:{}".format(result))
+        return result
+
+    def __repr__(self):
+        return repr(self.string)
+        
+
+class UniShellVisitor(PTNodeVisitor):
 
     def visit_WS(self, node, children):
         return None
@@ -58,7 +140,11 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_number(self, node, children):
         dbg("NUMBER NODE VALUE:", repr(node.value))
         dbg("NUMBER CHILDREN:", children)
-        result = node.value
+        #TODO fix kludge
+        if '.' in node.value:
+            result = float(node.value)
+        else:
+            result = int(node.value)
         dbg("NUMBER RETURNING:{}".format(repr(result)))
         return result
 
@@ -101,26 +187,7 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("STRING NODE VALUE:", repr(node.value))
         dbg("STRING CHILDREN:", children)
 
-        def replacer(matchObj):
-            cctx = self.context
-            name = matchObj.group('var0') or matchObj.group('var1')
-            result = ""
-            if name:
-                try:
-                    result = cctx.getVar(name)
-                except KeyError:
-                    pass
-            else:
-                cmd = matchObj.group('cmd0')
-                if cmd:
-                   result = self.interpreter.evaluate(cmd)
-                   result = ''.join([str(r) for r in result])
-                       
-            dbg("replacer.result=", result)
-            return result
-
-        string = children[0]
-        result = self.interpRegex.sub(replacer, string)
+        result = String(children[0])
 
         dbg("STRING RETURNING:{}".format(result))
         return result
@@ -135,28 +202,9 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_prog(self, node, children):
         dbg("PROG NODE VALUE:", repr(node.value))
         dbg("PROG CHILDREN:", repr(children))
-        result = children
+        #A prog is a list of commands or literals
+        result = Prog(children)
         dbg("PROG RETURNING:{}".format(repr(result)))
-        return result
-
-    def execCmd(self, cmdName, allArgs):
-        args = flags = []
-        
-        if allArgs:
-            args, flags = partition(lambda x: isinstance(x, Flag), allArgs)
-
-        dbg("args:{} flags:{}".format(args, flags))
-
-        result = ""
-
-        try:
-            cmd = self.context.getCmd(cmdName)
-            try:
-                result = cmd(args, flags, self.context)
-            except Exception as e:
-                print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
-        except KeyError:
-            print("ERROR: Unkown command: {}".format(cmdName), file=sys.stderr)
         return result
 
     def visit_cmd_interp(self, node, children):
@@ -176,37 +224,33 @@ class UniShellVisitor(PTNodeVisitor):
         #TODO: return a (stdin, stderr) tuple instead? Throw a BadExit
         #exception on a bad exit code.
         #args = children[1] if len(children) > 1 else []
+        cmdName = children[0]
         args = children[1:]
-        result = self.execCmd(children[0], args)
+        result = Command(cmdName, args)
 
         dbg("CMD RETURNING:{}".format(repr(result)))
         return result
 
+gVisitor = UniShellVisitor(debug = gDebug)
 
+def parse(source):
+    dbg("parse({}) called".format(repr(source)))
+    parse_tree = gParser.parse(source)
+    prog = visit_parse_tree(parse_tree, gVisitor)
+    return prog
+    
+def evaluate(source, context):
+    prog = parse(source)
+    return prog(context)
 
-class UniShellInterpreter:
-    def __init__(self, context):
-        debug = getDebugLevel() > 0
-        self.parser = ParserPEG(grammar, "prog", skipws = False, debug = debug)
-        self.visitor = UniShellVisitor(self, context, debug = debug)
+def execute(source, context):
+    try:
+        result = evaluate(source, context)
+        dbg("RESULT:", repr(result))
+        if result:
+            for r in result:
+                if r:
+                    print(str(r))
 
-    def evaluate(self, prog):
-        dbg("++++evaluate('{}') called".format(prog))
-        parse_tree = self.parser.parse(prog)
-        result = visit_parse_tree(parse_tree, self.visitor)
-        return result
-
-    def execute(self, prog):
-        try:
-            result = self.evaluate(prog)
-            dbg("RESULT:", repr(result))
-            if result:
-                if issubclass(type(result), list):
-                    for r in result:
-                        if r:
-                            print(str(r))
-                else:
-                    if result:
-                        print(str(result))
-        except NoMatch as e:
-            print("SYNTAX ERROR: ", e)
+    except NoMatch as e:
+        print("SYNTAX ERROR: ", e)

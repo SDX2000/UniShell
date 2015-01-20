@@ -6,6 +6,9 @@ sys.path.append("..")
 from objects import FileInfo
 from pprint import pprint
 
+#TODO: Change back calls to String objects once the string interpolation regex
+#is incorporated in the main grammar
+
 class InvalidArgumentError(ValueError):
     def __init__(self, argName, argValue):
         self.argName = argName
@@ -20,7 +23,7 @@ def cmdStat(args, flags, context):
     """
     if not args:
         raise InvalidArgumentError("filePath", ", ".join(args))
-    filePath = args[0]
+    filePath = args[0](context)
     return FileInfo(filePath)
 
 
@@ -29,7 +32,7 @@ def cmdChangeDirectory(args, flags, context):
     Change directory
     """
     try:
-        os.chdir(args[0])
+        os.chdir(args[0](context))
     except IndexError:
         pass
 
@@ -56,7 +59,9 @@ def cmdEcho(args, flags, context):
     """
     Echo arguments to output
     """
-    msg = ' '.join(args)
+    #NOTE: args must be a list of Strings or literals
+    
+    msg = ' '.join(map(lambda x: x(context) if callable(x) else str(x), args))
     #print("ECHO>", msg)
     return msg
 
@@ -72,11 +77,11 @@ def cmdSet(args, flags, context):
     """
     #print("args:{} flags:{}".format(args, flags))
 
-    name = args[0]
-    value = args[1]
+    name = args[0](context)
+    value = args[1](context)
     exported = len([flag for flag in flags if flag.name == "x"]) > 0
 
-    context.setVar(name,  value, exported)
+    context.setVar(name, value, exported)
     
 
 def cmdListDir(args, flags, context):
@@ -87,7 +92,7 @@ def cmdListDir(args, flags, context):
     Syntax: -
         ls [target_dir]
     """
-    target = (args[0] if args else None) or '.'
+    target = (args[0](context) if args else None) or '.'
     for x in os.listdir(target):
         print(x)
 

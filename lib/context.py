@@ -11,7 +11,9 @@ class Variable:
     def __repr__(self):
         return "Variable(name='{}', value={}, exported={})".format(self.name, repr(self.value), self.exported)
 
-
+#TODO Check if we really need to differentiate between commands and variables. If not then replace
+#the execution context class with a single dictionary containing both commands and variables.
+#Use a separate dictionary for script options.
 class ExecutionContext:
     def __init__(self):
         self.variables = {}

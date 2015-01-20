@@ -29,18 +29,16 @@ from docopt import docopt
 from commands import *
 from lib.logger import setDebugLevel, dbg
 from lib.context import ExecutionContext
-from lib.interpreter import UniShellInterpreter
+from lib.interpreter import parse, evaluate, execute
 
 version = "0.0.1"
 
 gInitDir = None
-gInterpreter = None
 gContext = None
 
 def init():
     global gInitDir
     global gContext
-    global gInterpreter
 
     dbg("Init called")
     if not gInitDir:
@@ -48,6 +46,7 @@ def init():
     else:
         os.chdir(gInitDir)
 
+    #TODO: Make gContext local
     gContext = ExecutionContext()
 
     gContext.setCmd("stat", cmdStat)
@@ -63,7 +62,7 @@ def init():
 
     gContext.setVar("INIT_DIR", gInitDir)
 
-    gInterpreter = UniShellInterpreter(gContext)
+
 
 def printBanner():
     print("UniShell Version {}".format(version))
@@ -80,15 +79,15 @@ def startRepl():
     while True:
         try:
             cwd = os.getcwd()
-            inp = input(cwd + "> ")
+            line = input(cwd + "> ")
         except KeyboardInterrupt:
             print("")
             continue
         except EOFError:
             print("")
             break
-        gInterpreter.execute(inp)
-        
+        execute(line, getCtx())
+
 def main(args):
     init()
 
@@ -96,7 +95,7 @@ def main(args):
     if args['-c']:
         doRepl = False
         for cmd in args['COMMAND']:
-            gInterpreter.execute(cmd)
+            execute(cmd, getCtx())
     
     for arg in args['FILE']:
         doRepl = False
@@ -111,7 +110,7 @@ def main(args):
             
             with open(arg, "r") as f:
                 for line in f:
-                    gInterpreter.execute(line)
+                    execute(line, getCtx())
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:

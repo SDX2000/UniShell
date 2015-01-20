@@ -38,12 +38,14 @@
 
     
     
-* Conditionals if / else / elif. Model it after python. External commands which fail should thow a BadExit. Need to handle BadExits asynchronously for non-blocking commands, may be a callbacks can be provided to check for success/errors (take inspiration from JQuery).
+* Conditionals if / else / elif. Model it after python. External commands which fail should thow a BadExit. Exit codes cannot not be checked using conditionals directly you will have to catch BadExit first. Need to handle BadExits asynchronously for non-blocking commands, may be a callbacks can be provided to check for success/errors (take inspiration from JQuery).
 * Loops
 * Lists, a = [a b c], len a, a[0], a[1:]
 * Constants
 * Slicing
-* Functions, doc strings
+* Functions
+    * Check if the return keyword can be avoided. Using a mandatory else part for if may help. Use match when if/elif/else becomes cumbersome.
+    * doc strings
 * Variable scopes, persistence (use json/sqlite?)
 * Exceptions (try, catch, finally)
 * Pattern matching with match

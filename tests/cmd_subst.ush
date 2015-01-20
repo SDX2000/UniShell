@@ -20,3 +20,6 @@ echo $(echo "hello") $(echo "world")
 #Subst inside quotes
 
 echo "$(echo a)"
+
+#TODO: Uncomment when string escapes are supported
+#echo "$(echo \"$(echo a)\")"
