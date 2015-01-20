@@ -1,5 +1,5 @@
 # Todo next
-* Generate custom ASG
+* Carry out string interpolation at parse time.
 
 # Todo
 ## Implement language features
@@ -102,6 +102,8 @@
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 # Done
+* Introduced integer and float in grammar
+* Generate custom ASG
 * command substitution $(pwd)
 * Context.isExported(varName)
 * Context.getVar() should return the value of the variable instead of the Variable class
