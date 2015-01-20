@@ -10,18 +10,20 @@ from lib import partition
 grammar = """
     WS           = r'[ \t]+'
     EOL          = "\n"/";"
-    number       = r'\d+\.\d+|\d+'
+    integer      = r'[+-]?\d+'
+    float        = r'[+-]?\d+\.\d+((e|E)[+-]?\d+)?'
+    number       = float / integer
     ident        = r'[a-zA-Z_](\w|_)*'
     quoted_str   = r'"[^"]*"'
     bare_str     = r'[a-zA-Z_.:*?/@~${}](\w|[.:*?/@~${}])*'
     string       = quoted_str / bare_str
     literal      = string / number
     expr_cmd     = cmd / expr
-    expr         = cmd_interp / literal
+    expr         = eval / literal
     flag         = ("-" ident / "--" ident)
     comment      = "#" r'.*'
     cmd          = ident (WS (flag / expr))*
-    cmd_interp   = "$(" WS? cmd WS? ")"
+    eval         = "$(" WS? expr_cmd WS? ")"
     stmnt        = WS? expr_cmd? WS? comment? WS?
     prog         = (stmnt EOL)* stmnt? EOF
 """
@@ -38,7 +40,7 @@ class Flag:
     def __repr__(self):
         return "Flag(name={}, value={})".format(self.name, self.value)
 
-#A prog is a list of commands or literals
+
 class Prog:
     def __init__(self, elements):
         self.elements = elements
@@ -110,8 +112,8 @@ class String:
                    prog = parse(cmd)
                    result = prog(context)[0]
                        
-            dbg("replacer.result=", result)
-            return result
+            dbg("replacer.result=", repr(result))
+            return str(result)
 
         result = self.interpRegex.sub(replacer, self.string)
 
@@ -137,14 +139,26 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("STMNT RETURNING:{}".format(repr(result)))
         return result
 
+    def visit_integer(self, node, children):
+        dbg("INTEGER NODE VALUE:", repr(node.value))
+        dbg("INTEGER CHILDREN:", children)
+
+        result = int(node.value)
+        dbg("INTEGER RETURNING:{}".format(repr(result)))
+        return result
+
+    def visit_float(self, node, children):
+        dbg("FLOAT NODE VALUE:", repr(node.value))
+        dbg("FLOAT CHILDREN:", children)
+
+        result = float(node.value)
+        dbg("FLOAT RETURNING:{}".format(repr(result)))
+        return result
+
     def visit_number(self, node, children):
         dbg("NUMBER NODE VALUE:", repr(node.value))
         dbg("NUMBER CHILDREN:", children)
-        #TODO fix kludge
-        if '.' in node.value:
-            result = float(node.value)
-        else:
-            result = int(node.value)
+        result = children[0]
         dbg("NUMBER RETURNING:{}".format(repr(result)))
         return result
 

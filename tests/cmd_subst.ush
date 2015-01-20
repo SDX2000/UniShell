@@ -3,6 +3,7 @@ echo "================"
 echo $SCRIPT_NAME
 echo "================"
 
+#NOTE: $() is just short for eval
 
 #sanity check
 echo a
@@ -20,6 +21,30 @@ echo $(echo "hello") $(echo "world")
 #Subst inside quotes
 
 echo "$(echo a)"
+
+
+
+#
+$("abc")
+$("1")
+$("+1")
+$("-1")
+$("$(+1)")
+$("$(-1)")
+$(1)
+$(+1)
+$(-1)
+$(-1.1e-1)
+$(+1.1e+1)
+
+#
+"$(1)"
+"$(+1)"
+"$(-1)"
+"$(-1.1e-1)"
+"$(+1.1e+1)"
+
+
 
 #TODO: Uncomment when string escapes are supported
 #echo "$(echo \"$(echo a)\")"
