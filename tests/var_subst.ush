@@ -1,0 +1,18 @@
+#!/usr/bin/env unishell
+echo "================"
+echo $SCRIPT_NAME
+echo "================"
+
+set msg "Hi there"
+
+echo $msg
+echo ${msg}
+echo "${msg}."
+
+set hello hello
+set world world
+
+echo $hello $world
+echo ${hello} ${world}
+echo "$hello $world"
+echo "${hello}X${world}."

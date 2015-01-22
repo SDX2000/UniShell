@@ -1,28 +1,30 @@
 import os
 import sys
 
-sys.path.append("..")
 
 from objects import FileInfo
 from pprint import pprint
 
-#TODO: Change back calls to String objects once the string interpolation regex
+
+from lib.logger  import dbg, getDebugLevel
+from lib.interpreter import String
+from lib.exceptions import ArgumentError
+
+#TODO: Remove calls to String objects once the string interpolation regex
 #is incorporated in the main grammar
 
-class InvalidArgumentError(ValueError):
-    def __init__(self, argName, argValue):
-        self.argName = argName
-        self.argValue = argValue
-
-    def __str__(self):
-        return "Invalid argument {}='{}'.".format(self.argName, self.argValue)
+#TODO: Implement a check signature method which will check the arguments
+#against a specified signature.
 
 def cmdStat(args, flags, context):
     """
     Display file or file system status
     """
     if not args:
-        raise InvalidArgumentError("filePath", ", ".join(args))
+        ArgumentError("Expecting at least one argument")
+
+        
+    
     filePath = args[0](context)
     return FileInfo(filePath)
 
@@ -31,6 +33,9 @@ def cmdChangeDirectory(args, flags, context):
     """
     Change directory
     """
+    if args and not type(args[0]) is String:
+        ArgumentError("The argument supplied is of incorrect type.")
+    
     try:
         os.chdir(args[0](context))
     except IndexError:
@@ -43,6 +48,9 @@ def cmdExit(args, flags, context):
     """
     Exit shell
     """
+    if args and not type(args[0]) is int:
+        ArgumentError("The argument supplied is of incorrect type.")
+        
     try:
         sys.exit(args[0])
     except IndexError:
@@ -53,6 +61,8 @@ def cmdClearScreen(args, flags, context):
     """
     Clear screen
     """
+    if args: 
+        ArgumentError("No arguments expected")
     print("\x1Bc", end="")
 
 def cmdEcho(args, flags, context):
@@ -60,7 +70,7 @@ def cmdEcho(args, flags, context):
     Echo arguments to output
     """
     #NOTE: args must be a list of Strings or literals
-    
+        
     msg = ' '.join(map(lambda x: x(context) if callable(x) else str(x), args))
     #print("ECHO>", msg)
     return msg

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+pushd tests
 unishell -c "echo Hello A"
 #unishell -c "echo Hello A" -t
 unishell -c 'set msg "Hello B"' -c 'echo $msg'
@@ -15,3 +15,7 @@ for i in *.ush;
 do 
     eval ./$i; 
 done
+
+popd
+
+popd

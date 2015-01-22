@@ -8,28 +8,32 @@ from .logger  import dbg, getDebugLevel
 from lib import partition
 
 grammar = """
-    WS           = r'[ \t]+'
-    EOL          = "\n"/";"
-    integer      = r'[+-]?\d+'
-    float        = r'[+-]?\d+\.\d+((e|E)[+-]?\d+)?'
-    number       = float / integer
-    ident        = r'[a-zA-Z_](\w|_)*'
-    quoted_str   = r'"[^"]*"'
-    bare_str     = r'[a-zA-Z_.:*?/@~${}](\w|[.:*?/@~${}])*'
-    string       = quoted_str / bare_str
-    literal      = string / number
-    expr_cmd     = cmd / expr
-    expr         = eval / literal
-    flag         = ("-" ident / "--" ident)
-    comment      = "#" r'.*'
-    cmd          = ident (WS (flag / expr))*
-    eval         = "$(" WS? expr_cmd WS? ")"
-    stmnt        = WS? expr_cmd? WS? comment? WS?
-    prog         = (stmnt EOL)* stmnt? EOF
+    WS               = r'[ \t]+'
+    EOL              = "\n"/";"
+    integer          = r'[+-]?\d+'
+    float            = r'[+-]?\d+\.\d+((e|E)[+-]?\d+)?'
+    number           = float / integer
+    ident            = r'[a-zA-Z_](\w|_)*'
+    quoted_str       = r'"[^"]*"'
+    bare_str         = r'[a-zA-Z_.:*?/@~{}](\w|[.:*?/@~{}])*'
+    string           = quoted_str / bare_str
+    literal          = string / number
+    expr_cmd         = cmd / expr
+    expr             = eval_var / eval / literal
+    flag             = ("-" ident / "--" ident)
+    comment          = "#" r'.*'
+    cmd              = ident (WS (flag / expr))*
+    eval_bare_var    = "$" ident
+    eval_quoted_var  = "${" ident "}"
+    eval_var         = eval_bare_var / eval_quoted_var
+    eval             = "$(" WS? expr_cmd WS? ")"
+    stmnt            = WS? expr_cmd? WS? comment? WS?
+    prog             = (stmnt EOL)* stmnt? EOF
 """
 
 #BUG getDebugLevel() is being called even before main has a chance to set it
-gDebug = getDebugLevel() > 0
+#gDebug = getDebugLevel() > 0
+gDebug = False
 gParser = ParserPEG(grammar, "prog", skipws = False, debug = gDebug)
 
 
@@ -42,16 +46,16 @@ class Flag:
 
 
 class Prog:
-    def __init__(self, elements):
-        self.elements = elements
+    def __init__(self, expressions):
+        self.expressions = expressions
 
     def __call__(self, context):
         result = []
-        for elem in self.elements:
-            if callable(elem):
-                result.append(elem(context))
+        for expr in self.expressions:
+            if callable(expr):
+                result.append(expr(context))
             else:
-                result.append(elem)
+                result.append(expr) #A literal
         dbg("Prog result:", result)
         return result
 
@@ -122,7 +126,18 @@ class String:
 
     def __repr__(self):
         return repr(self.string)
-        
+
+class Lookup:
+    def __init__(self, varName):
+        if not type(varName) is str:
+            raise TypeError("Argument is not a string")
+        self.varName = varName
+
+    def __call__(self, context):
+        return context.getVar(self.varName)
+
+    def __repr__(self):
+        return "Lookup({})".format(repr(self.varName))
 
 class UniShellVisitor(PTNodeVisitor):
 
@@ -170,6 +185,27 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("FLAG CHILDREN:", children)
         result = Flag(children[0])
         dbg("FLAG RETURNING:{}".format(repr(result)))
+        return result
+
+    def eval_bare_var(self, node, children):
+        dbg("EVAL_BARE_VAR NODE VALUE:", repr(node.value))
+        dbg("EVAL_BARE_VAR CHILDREN:", children)
+        result = children[0]
+        dbg("EVAL_BARE_VAR RETURNING:{}".format(repr(result)))
+        return result
+
+    def visit_eval_quoted_var(self, node, children):
+        dbg("EVAL_QUOTED_VAR NODE VALUE:", repr(node.value))
+        dbg("EVAL_QUOTED_VAR CHILDREN:", children)
+        result = children[0]
+        dbg("EVAL_QUOTED_VAR RETURNING:{}".format(repr(result)))
+        return result
+    
+    def visit_eval_var(self, node, children):
+        dbg("EVAL_VAR NODE VALUE:", repr(node.value))
+        dbg("EVAL_VAR CHILDREN:", children)
+        result = Lookup(children[0])
+        dbg("EVAL_VAR RETURNING:{}".format(repr(result)))
         return result
 
     def visit_quoted_str(self, node, children):
