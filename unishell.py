@@ -16,10 +16,12 @@ Options:
   FILE               UniShell Script file (usually *.ush)
 """
 
+import readline
+
 from os import path
 from docopt import docopt
 from arpeggio import NoMatch
-from itertools import chain
+
 
 from commands import *
 from lib.formatters import printDict, printList
@@ -71,6 +73,8 @@ def init():
             , "ls": cmdListDir
             , "setopt": cmdSetOpt
             , "getopt": cmdGetOpt
+            , "pushopt": cmdPushOpt
+            , "popopt": cmdPopOpt
             , "options": cmdGetOptions
             , "help": cmdHelp
             , "INIT_DIR": gInitDir
@@ -79,15 +83,15 @@ def init():
 
         },
         "options": {
-            "prompt": lambda a, f, ctx: os.getcwd() + "> "
-            , "echo": False
-            , "autoprint": False
+            "prompt": [lambda a, f, ctx: os.getcwd() + "> "]
+            , "echo": [False]
+            , "autoprint": [False]
         }
     }
 
 
 def getOption(name):
-    return gContext["options"][name]
+    return gContext["options"][name][-1]
 
 
 def printBanner():

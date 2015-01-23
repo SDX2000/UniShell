@@ -128,7 +128,7 @@ def cmdSetOpt(args, flags, context):
         elif value.lower() in ["off", "false", "no"]:
             value = False
 
-    context["options"][name] = value
+    context["options"][name] = [value]
 
     return value
 
@@ -150,8 +150,56 @@ def cmdGetOpt(args, flags, context):
     except IndexError as e:
         raise ArgumentError("Incorrect number of arguments specified") from e
 
-    return context["options"][name]
+    return context["options"][name][-1]
 
+def cmdPushOpt(args, flags, context):
+    """
+    Set and push script option on the options stack.
+
+    Syntax:-
+        pushopt option value
+    """
+    # print("args:{} flags:{}".format(args, flags))
+
+    try:
+        name = args[0]
+        if not type(name) is str:
+            raise ArgumentError("The option name needs to be a string.")
+        if not name in context["options"]:
+            raise ArgumentError("Invalid option {}".format(name))
+        value = args[1]
+    except IndexError as e:
+        raise ArgumentError("Incorrect number of arguments specified") from e
+
+    if type(value) is str:
+        if value.lower() in ["on", "true", "yes"]:
+            value = True
+        elif value.lower() in ["off", "false", "no"]:
+            value = False
+
+    context["options"][name].append(value)
+
+    return value
+
+def cmdPopOpt(args, flags, context):
+    """
+    Pop script option from the options stack.
+
+    Syntax:-
+        popopt option
+    """
+    # print("args:{} flags:{}".format(args, flags))
+
+    try:
+        name = args[0]
+        if not type(name) is str:
+            raise ArgumentError("The option name needs to be a string.")
+        if not name in context["options"]:
+            raise ArgumentError("Invalid option {}".format(name))
+    except IndexError as e:
+        raise ArgumentError("Incorrect number of arguments specified") from e
+
+    return context["options"][name].pop()
 
 def cmdGetOptions(args, flags, context):
     return context["options"]
