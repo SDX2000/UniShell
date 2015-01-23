@@ -16,15 +16,16 @@ Options:
   FILE               UniShell Script file (usually *.ush)
 """
 
-
-
 from os import path
 from docopt import docopt
 from arpeggio import NoMatch
+from itertools import chain
 
 from commands import *
+from lib.formatters import printDict, printList
 from lib.logger import setDebugLevel, dbg
 from lib.interpreter import parse, evaluate
+from lib.prologue import prologue
 
 gBanner = """\
  _    _       _  _____ _          _ _
@@ -57,7 +58,6 @@ def init():
     else:
         os.chdir(gInitDir)
 
-    # TODO: Make gContext local
     gContext = {
         "vars": {
             "stat": cmdStat
@@ -69,13 +69,24 @@ def init():
             , "env": cmdEnv
             , "echo": cmdEcho
             , "ls": cmdListDir
+            , "setopt": cmdSetOpt
+            , "options": cmdGetOptions
             , "help": cmdHelp
             , "INIT_DIR": gInitDir
         },
         "exported_vars": {
 
+        },
+        "options": {
+            "prompt": lambda a, f, ctx: os.getcwd() + "> "
+            , "echo": False
+            , "autoprint": False
         }
     }
+
+
+def getOption(name):
+    return gContext["options"][name]
 
 
 def printBanner():
@@ -96,9 +107,14 @@ def getVars():
 def execute(source, context):
     result = evaluate(source, context)
     dbg("RESULT:", repr(result))
+
     if result:
         for r in result:
-            if r:
+            if issubclass(type(r), list):
+                printList(r)
+            elif issubclass(type(r), dict):
+                printDict(r)
+            elif r:
                 print(str(r))
 
 
@@ -106,8 +122,10 @@ def startRepl():
     printBanner()
     while True:
         try:
-            cwd = os.getcwd()
-            line = input(cwd + "> ")
+            prompt = getOption("prompt")
+            if callable(prompt):
+                prompt = prompt(None, None, getCtx())
+            line = input(str(prompt))
         except KeyboardInterrupt:
             print("")
             continue
@@ -120,12 +138,21 @@ def startRepl():
             print("SYNTAX ERROR: ", e)
 
 
+def evalPrologue():
+    try:
+        evaluate(prologue, getCtx())
+    except NoMatch as e:
+        print("SYNTAX ERROR IN PROLOGUE! ", e)
+
+
 def main(args):
     init()
     global gCheckSyntax
 
     if args['--syntax']:
         gCheckSyntax = True
+
+    evalPrologue()
 
     doRepl = True
     if args['-c']:

@@ -7,8 +7,8 @@ from lib.exceptions import ArgumentError
 # TODO: Remove calls to String objects once the string interpolation regex
 # is incorporated in the main grammar
 
-#TODO: Implement a check signature method which will check the arguments
-#against a specified signature.
+# TODO: Implement a check signature method which will check the arguments
+# against a specified signature.
 
 def cmdStat(args, flags, context):
     """
@@ -66,7 +66,7 @@ def cmdEcho(args, flags, context):
     """
     Echo arguments to output
     """
-    #NOTE: args must be a list of Strings or literals
+    # NOTE: args must be a list of Strings or literals
 
     msg = ' '.join(map(lambda x: str(x), args))
     print(msg)
@@ -101,6 +101,40 @@ def cmdSet(args, flags, context):
         context["exported_vars"][name] = True
 
     return value
+
+
+def cmdSetOpt(args, flags, context):
+    """
+    Set script option.
+
+    Syntax:-
+        setopt option value
+    """
+    # print("args:{} flags:{}".format(args, flags))
+
+    try:
+        name = args[0]
+        if not type(name) is str:
+            raise ArgumentError("The option name needs to be a string.")
+        if not name in context["options"]:
+            raise ArgumentError("Invalid option {}".format(name))
+        value = args[1]
+    except IndexError as e:
+        raise ArgumentError("Incorrect number of arguments specified") from e
+
+    if type(value) is str:
+        if value.lower() in ["on", "true", "yes"]:
+            value = True
+        elif value.lower() in ["off", "false", "no"]:
+            value = False
+
+    context["options"][name] = value
+
+    return value
+
+
+def cmdGetOptions(args, flags, context):
+    return context["options"]
 
 
 def cmdListDir(args, flags, context):

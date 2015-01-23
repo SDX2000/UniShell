@@ -1,5 +1,6 @@
 # Todo next
 * Add an autoprint script option (setopt autoprint on)
+* Add a no banner flag (--no-banner)
 
 # Todo
 ## Implement language features
@@ -110,7 +111,9 @@
 * 
 
 ## Testing
+* Add a test for the -s/--syntax switch
 * Test on cygwin/mintty in addition to cmd.exe on windows
+
 
 # Done
 * Add a check syntax option (-s). Run the parser and quit when this option is specified.
