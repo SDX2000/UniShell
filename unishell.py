@@ -30,7 +30,7 @@ from arpeggio import NoMatch
 from commands import *
 from lib.logger import setDebugLevel, dbg
 from lib.context import ExecutionContext
-from lib.interpreter import parse, evaluate, execute
+from lib.interpreter import parse, evaluate
 
 version = "0.0.1"
 
@@ -38,7 +38,7 @@ gInitDir = None
 gContext = None
 
 gBanner = """\
- _    _       _  _____ _          _ _ 
+ _    _       _  _____ _          _ _
 | |  | |     (_)/ ____| |        | | |
 | |  | |_ __  _  (___ | |__   ___| | |
 | |  | |  _ \| |\___ \|  _ \ / _ \ | |
@@ -85,6 +85,17 @@ def printBanner():
 def getCtx():
     return gContext
 
+def execute(source, context):
+    try:
+        result = evaluate(source, context)
+        dbg("RESULT:", repr(result))
+        if result:
+            for r in result:
+                if r:
+                    print(str(r))
+
+    except NoMatch as e:
+        print("SYNTAX ERROR: ", e)
 
 def startRepl():
     printBanner()
