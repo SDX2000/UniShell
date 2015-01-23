@@ -2,17 +2,18 @@
 """UniShell
 
 Usage:
-  unishell [(-t | --trace)] [(-i | --interactive)] [(-c COMMAND) ...] [FILE ...]
+  unishell [(-t | --trace)] [(-i | --interactive)] [(-c COMMAND) ...] [-s | --syntax] [FILE ...]
   unishell (-h | --help)
   unishell --version
 
 Options:
   -c                 Execute COMMAND
-  FILE               UniShell Script file (usually *.ush)
+  -s --syntax        Check syntax but do not run anything
   -i --interactive   Start interactive shell
   -t --trace         Print debug trace messages.
   -h --help          Show this screen.
   --version          Show version.
+  FILE               UniShell Script file (usually *.ush)
 """
 
 import os
@@ -44,15 +45,18 @@ version = "0.0.1"
 
 gInitDir = None
 gContext = None
-gExported = None
 gOptions = None
-
+gCheckSyntax = False
 
 def init():
     global gInitDir
     global gContext
+    global gCheckSyntax
 
     dbg("Init called")
+
+    gCheckSyntax = False
+
     if not gInitDir:
         gInitDir = os.getcwd()
     else:
@@ -123,16 +127,25 @@ def startRepl():
 
 def main(args):
     init()
+    global gCheckSyntax
+
+    if args['--syntax']:
+        gCheckSyntax = True
 
     doRepl = True
     if args['-c']:
         doRepl = False
         for cmd in args['COMMAND']:
             try:
-                execute(cmd, getCtx())
+                if not gCheckSyntax:
+                    execute(cmd, getCtx())
+                else:
+                    parse(cmd)
             except NoMatch as e:
                 print("SYNTAX ERROR: ", e)
-
+            else:
+                if gCheckSyntax:
+                    print("Syntax OK.")
     for arg in args['FILE']:
         doRepl = False
         try:
@@ -147,9 +160,15 @@ def main(args):
             with open(arg, "r") as f:
                 source = f.read()
                 try:
-                    evaluate(source, getCtx())
+                    if not gCheckSyntax:
+                        evaluate(source, getCtx())
+                    else:
+                        parse(source)
                 except NoMatch as e:
                     print("SYNTAX ERROR: ", e)
+                else:
+                    if gCheckSyntax:
+                        print("Syntax OK.")
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:
