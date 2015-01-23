@@ -1,5 +1,4 @@
 # Todo next
-* Add a check syntax option (-x). Run the parser and quit when this option is specified.
 * Add an autoprint script option (setopt autoprint on)
 
 # Todo
@@ -114,6 +113,7 @@
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 # Done
+* Add a check syntax option (-s). Run the parser and quit when this option is specified.
 * Translate escapes
 * Remove the ExecutionContext class and use plain dictionaries instead
     * Check if we really need to differentiate between commands and variables. If not then replace the execution context class with a single dictionary containing both commands and variables. Use a separate dictionary for script options.
