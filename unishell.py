@@ -85,17 +85,16 @@ def printBanner():
 def getCtx():
     return gContext
 
-def execute(source, context):
-    try:
-        result = evaluate(source, context)
-        dbg("RESULT:", repr(result))
-        if result:
-            for r in result:
-                if r:
-                    print(str(r))
 
-    except NoMatch as e:
-        print("SYNTAX ERROR: ", e)
+def execute(source, context):
+    result = evaluate(source, context)
+    dbg("RESULT:", repr(result))
+    if result:
+        for r in result:
+            if r:
+                print(str(r))
+
+
 
 def startRepl():
     printBanner()
@@ -109,7 +108,10 @@ def startRepl():
         except EOFError:
             print("")
             break
-        execute(line, getCtx())
+        try:
+            execute(line, getCtx())
+        except NoMatch as e:
+            print("SYNTAX ERROR: ", e)
 
 
 def main(args):
@@ -120,7 +122,7 @@ def main(args):
         doRepl = False
         for cmd in args['COMMAND']:
             try:
-                evaluate(cmd, getCtx())
+                execute(cmd, getCtx())
             except NoMatch as e:
                 print("SYNTAX ERROR: ", e)
     
@@ -136,13 +138,11 @@ def main(args):
             getCtx().setVar("SCRIPT_NAME", scriptName)
             
             with open(arg, "r") as f:
-                for line in f:
-                    if getDebugLevel():
-                        print("#{}".format(line), end='')
-                    try:
-                        evaluate(line, getCtx())
-                    except NoMatch as e:
-                        print("SYNTAX ERROR: ", e)
+                source = f.read()
+                try:
+                    evaluate(source, getCtx())
+                except NoMatch as e:
+                    print("SYNTAX ERROR: ", e)
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:

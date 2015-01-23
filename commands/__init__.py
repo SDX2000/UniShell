@@ -23,7 +23,7 @@ def cmdStat(args, flags, context):
 
     filePath = args[0]
 
-    if not type(args[0]) is String:
+    if not type(args[0]) is str:
         raise ArgumentError("Argument must be a string.")
 
     return FileInfo(filePath)
@@ -33,7 +33,7 @@ def cmdChangeDirectory(args, flags, context):
     """
     Change directory
     """
-    if args and not type(args[0]) is String:
+    if args and not type(args[0]) is str:
         raise ArgumentError("The argument supplied is of incorrect type.")
     
     try:

@@ -1,5 +1,6 @@
 # Todo next
-* Pass the whole script to the parser instead of executing it line by line
+* Add a check syntax option (-x). Run the parser and quit when this option is specified.
+* Add an autoprint script option (setopt autoprint on)
 
 # Todo
 ## Implement language features
@@ -74,7 +75,13 @@
 * History
 * Find/implement pure python implementation of readline and ncurses for windows.
 ### Misc
-* Add an option to echo commands as they are being executed. $(setopt echo on). Create a separate option variables space.
+* Script directives
+    * Create a separate option variable/command space.
+    * setopt echo on; setopt echo off; pushopt echo off; popopt echo, getopt echo
+    * Add an option to echo commands as they are being executed. $(setopt echo on).
+    * Add an autoprint script option
+        * When autoprint is true the output of all commands should be printed even if it is not printed explicitly. The output should not be printed twice if echo/set is called.
+        
 * choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
 
 ## Parsing
@@ -102,6 +109,7 @@
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 # Done
+* Pass the whole script to the parser instead of executing it line by line
 * Change the string interpolation logic to split the string using the regex instead of substituting the values at parse time. The values should be evaluated and concatenated at run time (__call__)
 * Introduced integer and float in grammar
 * Generate custom ASG

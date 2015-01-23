@@ -8,7 +8,7 @@ echo "START_DIR=$START_DIR"
 
 cd $SCRIPT_DIR
 cd ..
-stat unishell.py
+echo $(stat unishell.py)
 cd commands
 stat __init__.py
 cd $START_DIR
