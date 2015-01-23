@@ -2,14 +2,10 @@ import os
 import sys
 
 from objects import FileInfo
-from pprint import pprint
-
-from lib.logger import dbg, getDebugLevel
-from lib.interpreter import String
 from lib.exceptions import ArgumentError
 
-#TODO: Remove calls to String objects once the string interpolation regex
-#is incorporated in the main grammar
+# TODO: Remove calls to String objects once the string interpolation regex
+# is incorporated in the main grammar
 
 #TODO: Implement a check signature method which will check the arguments
 #against a specified signature.
@@ -35,7 +31,7 @@ def cmdChangeDirectory(args, flags, context):
     """
     if args and not type(args[0]) is str:
         raise ArgumentError("The argument supplied is of incorrect type.")
-    
+
     try:
         os.chdir(args[0])
     except IndexError:
@@ -50,7 +46,7 @@ def cmdExit(args, flags, context):
     """
     if args and not type(args[0]) is int:
         raise ArgumentError("The argument supplied is of incorrect type.")
-        
+
     try:
         sys.exit(args[0])
     except IndexError:
@@ -61,16 +57,17 @@ def cmdClearScreen(args, flags, context):
     """
     Clear screen
     """
-    if args: 
+    if args:
         raise ArgumentError("No arguments expected")
     print("\x1Bc", end="")
+
 
 def cmdEcho(args, flags, context):
     """
     Echo arguments to output
     """
     #NOTE: args must be a list of Strings or literals
-        
+
     msg = ' '.join(map(lambda x: str(x), args))
     print(msg)
     return msg
@@ -104,7 +101,7 @@ def cmdSet(args, flags, context):
         context["exported_vars"][name] = True
 
     return value
-    
+
 
 def cmdListDir(args, flags, context):
     """
@@ -122,6 +119,7 @@ def cmdListDir(args, flags, context):
     for x in os.listdir(target):
         print(x)
 
+
 def cmdEnv(args, flags, context):
     """
     Show environment
@@ -132,8 +130,8 @@ def cmdEnv(args, flags, context):
         value = context["vars"][varName]
         if not callable(value):
             print("{}{}={}".format("(exported) " if varName in context["exported_vars"] else "", varName, value))
-    
-        
+
+
 def cmdHelp(args, flags, context):
     """
     Show commands

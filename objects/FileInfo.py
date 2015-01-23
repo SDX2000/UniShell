@@ -1,18 +1,17 @@
 import os
-import re
-import inspect
 from os import path
 from datetime import datetime
 
 from .PipelineObject import PipelineObject
 from lib.decorators import visible
 
+
 def test():
     fi = FileInfo("FileInfo.py")
     print(fi)
 
-class FileInfo(PipelineObject):
 
+class FileInfo(PipelineObject):
     def __init__(self, filePath):
         self._filePath = path.abspath(filePath)
         self._statInfo = os.stat(self._filePath)
@@ -21,7 +20,7 @@ class FileInfo(PipelineObject):
     def creationTime(self):
         return datetime.fromtimestamp(self._statInfo.st_ctime)
 
-    
+
     @visible()
     def modificationTime(self):
         return datetime.fromtimestamp(self._statInfo.st_mtime)
@@ -38,7 +37,7 @@ class FileInfo(PipelineObject):
     def inodeNumber(self):
         return self._statInfo.st_ino
 
-    #TODO: replace with collection of FileInfo objects representing the links
+    # TODO: replace with collection of FileInfo objects representing the links
     @visible()
     def linkCount(self):
         return self._statInfo.st_nlink

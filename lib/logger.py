@@ -2,16 +2,20 @@ import sys
 
 debugLevel = 0
 
+
 def dbg(*str, **kwargs):
     if debugLevel:
         print(*str, **kwargs)
+
 
 def setDebugLevel(level):
     global debugLevel
     debugLevel = level
 
+
 def getDebugLevel():
     return debugLevel
+
 
 def format_arg_value(arg_val):
     """ Return a string representing a (name, value) pair.
@@ -21,6 +25,7 @@ def format_arg_value(arg_val):
     """
     arg, val = arg_val
     return "%s=%r" % (arg, val)
+
 
 def logfn(fn, write=sys.stdout.write):
     """ logfn calls to a function.
@@ -36,7 +41,7 @@ def logfn(fn, write=sys.stdout.write):
     argnames = code.co_varnames[:argcount]
     fn_defaults = fn.__defaults__ or []
     argdefs = dict(zip(argnames[-len(fn_defaults):], fn_defaults))
-    
+
     @functools.wraps(fn)
     def wrapped(*v, **k):
         # Collect function arguments by chaining together positional,
@@ -50,31 +55,40 @@ def logfn(fn, write=sys.stdout.write):
         write("%s(%s)\n" % (fn.__name__, ", ".join(args)))
         result = fn(*v, **k)
         write("%s(%s) returned: %s\n" % (fn.__name__, ", ".join(args), result))
+
     return wrapped
 
 
 if __name__ == '__main__':
     @logfn
     def f(x): pass
+
     @logfn
     def g(x, y): pass
+
     @logfn
     def h(x=1, y=2): pass
+
     @logfn
     def i(x, y, *v): pass
+
     @logfn
     def j(x, y, *v, **k): pass
+
     class X(object):
         @logfn
         def m(self, x): pass
+
         @classmethod
         @logfn
         def cm(klass, x): pass
-        
+
     def reversed_write(s): sys.stdout.write(''.join(reversed(s)))
+
     def k(**kw): pass
+
     k = logfn(k, write=reversed_write)
-        
+
     f(10)
     g("spam", 42)
     g(y="spam", x=42)

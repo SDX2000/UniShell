@@ -2,6 +2,7 @@ import re
 
 re1 = re.compile('([A-Z]+)')
 
+
 class PipelineObject:
     def __init__(self):
         pass
@@ -13,9 +14,9 @@ class PipelineObject:
             try:
                 if attr.fget.visible:
                     name = re1.sub(r' \1', attrName).lower().lstrip()
-                    x += ("{}{}: "+attr.fget.fmt+"\n").format(name[0].upper(),
-                                                              name[1:],
-                                                              getattr(self, attrName))
+                    x += ("{}{}: " + attr.fget.fmt + "\n").format(name[0].upper(),
+                                                                  name[1:],
+                                                                  getattr(self, attrName))
             except AttributeError:
                 pass
         return x

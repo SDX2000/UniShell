@@ -14,13 +14,11 @@ Options:
 
 from docopt import docopt
 
-
 import sys
 import traceback
 
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
-
 
 from pprint import pprint
 
@@ -59,31 +57,34 @@ grammar = """
     prog          = (stmnt EOL)* stmnt? EOF
 """
 
+
 class UniShellVisitor(PTNodeVisitor):
-     def visit_escape(self, node, children):
-         return children
-     def visit_prog(self, node, children):
-         return children
-     def visit_string(self, node, children):
-         print("STRING NODE VALUE:", node.value)
-         return children
+    def visit_escape(self, node, children):
+        return children
+
+    def visit_prog(self, node, children):
+        return children
+
+    def visit_string(self, node, children):
+        print("STRING NODE VALUE:", node.value)
+        return children
 
 
 def parse(source):
+    gParser = ParserPEG(grammar, "prog", skipws=False, debug=gDebug)
+    gVisitor = UniShellVisitor(debug=False)
 
-    gParser = ParserPEG(grammar, "prog", skipws = False, debug = gDebug)
-    gVisitor = UniShellVisitor(debug = False)
+    # print("parse({}) called".format(repr(source)))
 
-    #print("parse({}) called".format(repr(source)))
-    
     parse_tree = gParser.parse(source)
     prog = visit_parse_tree(parse_tree, gVisitor)
     return prog
 
+
 if __name__ == '__main__':
     args = docopt(__doc__, version="0.0.1")
-    #print("Docopt args:{}".format(repr(args)))
-    
+    # print("Docopt args:{}".format(repr(args)))
+
     if args['-t']:
         gDebug = True
 

@@ -34,17 +34,18 @@ grammar = """
     prog             = (stmnt EOL)* stmnt? EOF
 """
 
-#BUG getDebugLevel() is being called even before main has a chance to set it
+# BUG getDebugLevel() is being called even before main has a chance to set it
 #gDebug = getDebugLevel() > 0
 gDebug = False
-gProgParser = ParserPEG(grammar, "prog", skipws = False, debug = gDebug)
-gEvalParser = ParserPEG(grammar, "eval", skipws = False, debug = gDebug)
+gProgParser = ParserPEG(grammar, "prog", skipws=False, debug=gDebug)
+gEvalParser = ParserPEG(grammar, "eval", skipws=False, debug=gDebug)
 
 
 class Flag:
     def __init__(self, name, value=1):
         self.name = name
         self.value = value
+
     def __repr__(self):
         return "Flag(name={}, value={})".format(self.name, self.value)
 
@@ -59,30 +60,31 @@ class Prog:
             if callable(expr):
                 result.append(expr(context))
             else:
-                result.append(expr) #A literal
+                result.append(expr)  #A literal
         dbg("Prog result:", result)
         return result
 
     def __repr__(self):
         return repr("Prog({})".format(repr(self.expressions)))
 
+
 class Command:
     def __init__(self, cmdName, allArgs):
         if not cmdName or type(cmdName) is not str:
             raise Exception("Bad command name:{}".format(repr(cmdName)))
-        
+
         self.cmdName = cmdName
-        
+
         if allArgs:
             self.args, self.flags = partition(lambda x: isinstance(x, Flag), allArgs)
         else:
             self.args = self.flags = []
 
         dbg("args:{} flags:{}".format(self.args, self.flags))
-    
+
     def __call__(self, context):
         result = ""
-        
+
         try:
             cmd = context["vars"][self.cmdName]
             try:
@@ -102,7 +104,7 @@ class Command:
 
 class String:
     splitterRegex = re.compile(r'(\$[a-zA-Z_](?:\w|\d|_)*|\$\{[a-zA-Z_](?:\w|\d|_)*\}|\$\(.*?\))')
-    
+
     def __init__(self, string):
         if not type(string) is str:
             raise TypeError("Argument is not a string")
@@ -120,15 +122,15 @@ class String:
 
     def __call__(self, context):
         result = ""
-        
+
         for part in self.parts:
             if callable(part):
                 result += str(part(context))
             else:
                 result += str(part)
-        
+
         dbg("String({}) returning:{}".format(repr(self.string), repr(result)))
-        
+
         return result
 
     def __repr__(self):
@@ -151,7 +153,6 @@ class VarLookup:
 
 
 class UniShellVisitor(PTNodeVisitor):
-
     def visit_WS(self, node, children):
         return None
 
@@ -211,7 +212,7 @@ class UniShellVisitor(PTNodeVisitor):
         result = children[0]
         dbg("EVAL_QUOTED_VAR RETURNING:{}".format(repr(result)))
         return result
-    
+
     def visit_eval_var(self, node, children):
         dbg("EVAL_VAR NODE VALUE:", repr(node.value))
         dbg("EVAL_VAR CHILDREN:", children)
@@ -242,7 +243,7 @@ class UniShellVisitor(PTNodeVisitor):
         result = node.value
         dbg("BARE STRING RETURNING:{}".format(repr(result)))
         return result
-    
+
     def visit_ident(self, node, children):
         dbg("IDENT NODE VALUE:", repr(node.value))
         dbg("IDENT CHILDREN:", children)
@@ -250,7 +251,7 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("IDENT RETURNING:{}".format(repr(result)))
         return result
 
-    
+
     def visit_string(self, node, children):
         dbg("STRING NODE VALUE:", repr(node.value))
         dbg("STRING CHILDREN:", children)
@@ -266,7 +267,7 @@ class UniShellVisitor(PTNodeVisitor):
         result = children[0]
         dbg("EXPR RETURNING:{}".format(repr(result)))
         return result
-    
+
     def visit_prog(self, node, children):
         dbg("PROG NODE VALUE:", repr(node.value))
         dbg("PROG CHILDREN:", repr(children))
@@ -284,7 +285,7 @@ class UniShellVisitor(PTNodeVisitor):
 
         dbg("CMD_INTERP RETURNING:{}".format(repr(result)))
         return result
-    
+
     def visit_cmd(self, node, children):
         dbg("CMD NODE VALUE:", repr(node.value))
         dbg("CMD CHILDREN:", repr(children))
@@ -299,7 +300,9 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("CMD RETURNING:{}".format(repr(result)))
         return result
 
-gVisitor = UniShellVisitor(debug = gDebug)
+
+gVisitor = UniShellVisitor(debug=gDebug)
+
 
 def parse(source):
     dbg("parse({}) called".format(repr(source)))
@@ -307,13 +310,14 @@ def parse(source):
     prog = visit_parse_tree(parse_tree, gVisitor)
     return prog
 
+
 def parseEvalExpr(source):
     dbg("parseEvalExpr({}) called".format(repr(source)))
     parse_tree = gEvalParser.parse(source)
     prog = visit_parse_tree(parse_tree, gVisitor)
     return prog
 
-    
+
 def evaluate(source, context):
     dbg("----------PARSING---------")
     prog = parse(source)

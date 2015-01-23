@@ -16,15 +16,9 @@ Options:
   FILE               UniShell Script file (usually *.ush)
 """
 
-import os
-import re
-import sys
-import string
-import readline
-import collections
+
 
 from os import path
-from pprint import pprint
 from docopt import docopt
 from arpeggio import NoMatch
 
@@ -47,6 +41,7 @@ gInitDir = None
 gContext = None
 gOptions = None
 gCheckSyntax = False
+
 
 def init():
     global gInitDir
