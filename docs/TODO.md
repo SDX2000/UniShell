@@ -1,18 +1,13 @@
 # Todo next
+* Remove the ExecutionContext class and use plain dictionaries instead
 * Add a check syntax option (-x). Run the parser and quit when this option is specified.
 * Add an autoprint script option (setopt autoprint on)
 
 # Todo
 ## Implement language features
-### ASG - Abstract Semantic Graph
-* Generate custom ASG (Abstract semantic graph) using the node visitor. 
-    * ASG nodes should be callables
-    * Executing the root node should start an inorder execution from left to right. Non leaf nodes may also execute code and/or aggregate the results of their child nodes.
-    * Running the ASG should not change it in anyway. The ASG should operate on the context provided to it. Think of an ASG as a compiled representation of the parsed program.
 
 ### Literals
 * Add hex and octal integer literals. Use separate float and integer literals.
-* string escapes, string operations
 * dictionaries d = {x:1 y:2}; d = (dict [a b c d])
 * regular expression literals /abc/ig, =~
 * lambdas: \x y -> x == y; \ -> $a; \x -> len x
@@ -44,6 +39,7 @@
 * Lists, a = [a b c], len a, a[0], a[1:]
 * Constants
 * Slicing
+* String operations (slicing, sub-scripting, replacement)
 * Functions
     * Check if the return keyword can be avoided. Using a mandatory else part for if may help. Use match when if/elif/else becomes cumbersome.
     * doc strings
@@ -81,8 +77,8 @@
     * Add an option to echo commands as they are being executed. $(setopt echo on).
     * Add an autoprint script option
         * When autoprint is true the output of all commands should be printed even if it is not printed explicitly. The output should not be printed twice if echo/set is called.
-        
-* choose_prompt, set_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
+    * user defined prompts ("prompt", "prompt2")
+* choose_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
 
 ## Parsing
 * Improve syntax error messages. Do not say "SYNTAX ERROR:  Expected 'WS' at position..." instead skip all non essential tokens and report the next required rule match (list all rules if there are multiple choices)
@@ -103,12 +99,18 @@
 * getopt, docopt
  
 ## Automatic variables
-* user defined prompts 
+* 
 
 ## Testing
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 # Done
+
+* string escapes
+* Generate custom ASG (Abstract semantic graph) using the node visitor. 
+    * ASG nodes should be callables
+    * Executing the root node should start an inorder execution from left to right. Non leaf nodes may also execute code and/or aggregate the results of their child nodes.
+    * Running the ASG should not change it in anyway. The ASG should operate on the context provided to it. Think of an ASG as a compiled representation of the parsed program.
 * Pass the whole script to the parser instead of executing it line by line
 * Change the string interpolation logic to split the string using the regex instead of substituting the values at parse time. The values should be evaluated and concatenated at run time (__call__)
 * Introduced integer and float in grammar
