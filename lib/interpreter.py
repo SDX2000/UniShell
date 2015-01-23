@@ -316,14 +316,4 @@ def evaluate(source, context):
     dbg("----------RUNNING---------")
     return prog(context)
 
-def execute(source, context):
-    try:
-        result = evaluate(source, context)
-        dbg("RESULT:", repr(result))
-        if result:
-            for r in result:
-                if r:
-                    print(str(r))
 
-    except NoMatch as e:
-        print("SYNTAX ERROR: ", e)
