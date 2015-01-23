@@ -83,7 +83,7 @@ class Command:
         result = ""
         
         try:
-            cmd = context.getCmd(self.cmdName)
+            cmd = context["vars"][self.cmdName]
             try:
                 self.args = list(map(lambda x: x(context) if callable(x) else x, self.args))
                 result = cmd(self.args, self.flags, context)
@@ -138,7 +138,7 @@ class VarLookup:
         self.varName = varName
 
     def __call__(self, context):
-        result = context.getVar(self.varName)
+        result = context["vars"][self.varName]
         dbg("VarLookup({}) returning:{}".format(repr(self.varName), repr(result)))
         return result
 

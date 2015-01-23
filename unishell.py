@@ -29,13 +29,7 @@ from arpeggio import NoMatch
 
 from commands import *
 from lib.logger import setDebugLevel, dbg
-from lib.context import ExecutionContext
 from lib.interpreter import parse, evaluate
-
-version = "0.0.1"
-
-gInitDir = None
-gContext = None
 
 gBanner = """\
  _    _       _  _____ _          _ _
@@ -45,6 +39,13 @@ gBanner = """\
 | |__| | | | | |____) | | | |  __/ | |
  \____/|_| |_|_|_____/|_| |_|\___|_|_|
 """
+
+version = "0.0.1"
+
+gInitDir = None
+gContext = None
+gExported = None
+gOptions = None
 
 
 def init():
@@ -58,21 +59,24 @@ def init():
         os.chdir(gInitDir)
 
     # TODO: Make gContext local
-    gContext = ExecutionContext()
+    gContext = {
+        "vars": {
+            "stat": cmdStat
+            , "cd": cmdChangeDirectory
+            , "exit": cmdExit
+            , "quit": cmdExit
+            , "cls": cmdClearScreen
+            , "set": cmdSet
+            , "env": cmdEnv
+            , "echo": cmdEcho
+            , "ls": cmdListDir
+            , "help": cmdHelp
+            , "INIT_DIR": gInitDir
+        },
+        "exported_vars": {
 
-    gContext.setCmd("stat", cmdStat)
-    gContext.setCmd("cd",   cmdChangeDirectory)
-    gContext.setCmd("exit", cmdExit)
-    gContext.setCmd("quit", cmdExit)
-    gContext.setCmd("cls",  cmdClearScreen)
-    gContext.setCmd("set",  cmdSet)
-    gContext.setCmd("env",  cmdEnv)
-    gContext.setCmd("echo", cmdEcho)
-    gContext.setCmd("ls",   cmdListDir)
-    gContext.setCmd("help", cmdHelp)
-
-    gContext.setVar("INIT_DIR", gInitDir)
-
+        }
+    }
 
 
 def printBanner():
@@ -86,6 +90,10 @@ def getCtx():
     return gContext
 
 
+def getVars():
+    return gContext["vars"]
+
+
 def execute(source, context):
     result = evaluate(source, context)
     dbg("RESULT:", repr(result))
@@ -93,7 +101,6 @@ def execute(source, context):
         for r in result:
             if r:
                 print(str(r))
-
 
 
 def startRepl():
@@ -125,18 +132,18 @@ def main(args):
                 execute(cmd, getCtx())
             except NoMatch as e:
                 print("SYNTAX ERROR: ", e)
-    
+
     for arg in args['FILE']:
         doRepl = False
         try:
             scriptPath = path.abspath(arg)
-            scriptDir  = path.dirname(scriptPath)
+            scriptDir = path.dirname(scriptPath)
             scriptName = path.basename(arg)
-            
-            getCtx().setVar("SCRIPT_PATH", scriptPath)
-            getCtx().setVar("SCRIPT_DIR", scriptDir)
-            getCtx().setVar("SCRIPT_NAME", scriptName)
-            
+
+            getVars()["SCRIPT_PATH"] = scriptPath
+            getVars()["SCRIPT_DIR"] = scriptDir
+            getVars()["SCRIPT_NAME"] = scriptName
+
             with open(arg, "r") as f:
                 source = f.read()
                 try:
@@ -146,10 +153,10 @@ def main(args):
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:
-            getCtx().delVar("SCRIPT_PATH")
-            getCtx().delVar("SCRIPT_DIR")
-            getCtx().delVar("SCRIPT_NAME")
-                
+            del getVars()["SCRIPT_PATH"]
+            del getVars()["SCRIPT_DIR"]
+            del getVars()["SCRIPT_NAME"]
+
     if doRepl or args['--interactive']:
         startRepl()
 

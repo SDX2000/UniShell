@@ -98,7 +98,10 @@ def cmdSet(args, flags, context):
 
     exported = any(flag.name == "x" for flag in flags)
 
-    context.setVar(name, value, exported)
+    context["vars"][name] = value
+
+    if exported:
+        context["exported_vars"][name] = True
 
     return value
     
@@ -125,9 +128,10 @@ def cmdEnv(args, flags, context):
     """
     print("Variables")
     print("=========")
-    for varName in context.getVarNames():
-        value = context.getVar(varName)
-        print("{}{}={}".format("(exported) " if context.isExported(varName) else "", varName, value))
+    for varName in context["vars"].keys():
+        value = context["vars"][varName]
+        if not callable(value):
+            print("{}{}={}".format("(exported) " if varName in context["exported_vars"] else "", varName, value))
     
         
 def cmdHelp(args, flags, context):
@@ -136,5 +140,7 @@ def cmdHelp(args, flags, context):
     """
     print("Commands")
     print("========")
-    for cmdName in context.getCmdNames():
-        print("{}\t{}".format(cmdName, context.getCmd(cmdName).__doc__))
+    for varName in context["vars"].keys():
+        value = context["vars"][varName]
+        if callable(value):
+            print("{}{}={}".format("(exported) " if varName in context["exported_vars"] else "", varName, value))

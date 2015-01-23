@@ -1,5 +1,6 @@
 # Todo next
 * Remove the ExecutionContext class and use plain dictionaries instead
+    * Check if we really need to differentiate between commands and variables. If not then replace the execution context class with a single dictionary containing both commands and variables. Use a separate dictionary for script options.
 * Add a check syntax option (-x). Run the parser and quit when this option is specified.
 * Add an autoprint script option (setopt autoprint on)
 
@@ -14,6 +15,11 @@
 * wildcards *,**,?,{}
 
 ### Language
+* New exported variable/function syntax
+    * pub var x = 10
+    * pub func f(x)
+         echo $x
+      end
 * Operators
     * Arithmetic: + - * / %
     * Boolean: and or not
@@ -43,6 +49,7 @@
 * Functions
     * Check if the return keyword can be avoided. Using a mandatory else part for if may help. Use match when if/elif/else becomes cumbersome.
     * doc strings
+* End all blocks with the end keyword instead of using braces. This way the overhead of an opening brace can be avoided. 
 * Variable scopes, persistence (use json/sqlite?)
 * Exceptions (try, catch, finally)
 * Pattern matching with match
