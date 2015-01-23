@@ -70,6 +70,7 @@ def init():
             , "echo": cmdEcho
             , "ls": cmdListDir
             , "setopt": cmdSetOpt
+            , "getopt": cmdGetOpt
             , "options": cmdGetOptions
             , "help": cmdHelp
             , "INIT_DIR": gInitDir
@@ -114,7 +115,7 @@ def execute(source, context):
                 printList(r)
             elif issubclass(type(r), dict):
                 printDict(r)
-            elif r:
+            elif r is not None:
                 print(str(r))
 
 

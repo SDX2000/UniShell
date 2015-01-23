@@ -132,6 +132,26 @@ def cmdSetOpt(args, flags, context):
 
     return value
 
+def cmdGetOpt(args, flags, context):
+    """
+    Get script option.
+
+    Syntax:-
+        getopt option
+    """
+    # print("args:{} flags:{}".format(args, flags))
+
+    try:
+        name = args[0]
+        if not type(name) is str:
+            raise ArgumentError("The option name needs to be a string.")
+        if not name in context["options"]:
+            raise ArgumentError("Invalid option {}".format(name))
+    except IndexError as e:
+        raise ArgumentError("Incorrect number of arguments specified") from e
+
+    return context["options"][name]
+
 
 def cmdGetOptions(args, flags, context):
     return context["options"]

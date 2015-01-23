@@ -81,8 +81,7 @@
 * Find/implement pure python implementation of readline and ncurses for windows.
 ### Misc
 * Script directives
-    * Create a separate option variable/command space.
-    * setopt echo on; setopt echo off; pushopt echo off; popopt echo, getopt echo
+    * pushopt echo off; popopt echo, getopt echo
     * Add an option to echo commands as they are being executed. $(setopt echo on).
     * Add an autoprint script option
         * When autoprint is true the output of all commands should be printed even if it is not printed explicitly. The output should not be printed twice if echo/set is called.
@@ -116,6 +115,9 @@
 
 
 # Done
+* Script directives
+    * Create a separate option variable/command space.
+    * setopt echo on; setopt echo off; 
 * Add a check syntax option (-s). Run the parser and quit when this option is specified.
 * Translate escapes
 * Remove the ExecutionContext class and use plain dictionaries instead
