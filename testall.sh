@@ -1,4 +1,7 @@
 #!/bin/bash
+
+export PATH=$PATH:$PWD
+
 pushd tests
 unishell -c '"Hello A"'
 #unishell -c '"Hello A"' -t

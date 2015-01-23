@@ -1,5 +1,6 @@
 import re
 import sys
+import codecs
 import traceback
 
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
@@ -110,7 +111,10 @@ class String:
 
         parts = self.splitterRegex.split(self.string)
 
-        self.parts = list(map(lambda x: parseEvalExpr(x) if x.startswith('$') else x, parts))
+        def unescape(s):
+            return codecs.decode(s, 'unicode_escape')
+
+        self.parts = list(map(lambda x: parseEvalExpr(x) if x.startswith('$') else unescape(x), parts))
 
         dbg("String parts:", repr(self.parts))
 

@@ -1,0 +1,6 @@
+#!/usr/bin/env unishell
+echo "================"
+echo $SCRIPT_NAME
+echo "================"
+
+echo "a\tb\n"

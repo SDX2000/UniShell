@@ -1,6 +1,4 @@
 # Todo next
-* Remove the ExecutionContext class and use plain dictionaries instead
-    * Check if we really need to differentiate between commands and variables. If not then replace the execution context class with a single dictionary containing both commands and variables. Use a separate dictionary for script options.
 * Add a check syntax option (-x). Run the parser and quit when this option is specified.
 * Add an autoprint script option (setopt autoprint on)
 
@@ -10,9 +8,10 @@
 ### Literals
 * Add hex and octal integer literals. Use separate float and integer literals.
 * dictionaries d = {x:1 y:2}; d = (dict [a b c d])
-* regular expression literals /abc/ig, =~
+* regular expression:/abc/ig, =~
 * lambdas: \x y -> x == y; \ -> $a; \x -> len x
 * wildcards *,**,?,{}
+* Add support for the \e escape code in strings
 
 ### Language
 * New exported variable/function syntax
@@ -21,6 +20,7 @@
          echo $x
       end
 * Operators
+    * Assignment: x = 10; pub y = 10
     * Arithmetic: + - * / %
     * Boolean: and or not
     * Relational: < > <= >= == != (in boolean contexts)
@@ -37,8 +37,6 @@
     * Syntax examples
         * cat abc.txt | !grep "foobar"
         * !cmd  < abc.txt >def.txt 2>&1
-
-    
     
 * Conditionals if / else / elif. Model it after python. External commands which fail should thow a BadExit. Exit codes cannot not be checked using conditionals directly you will have to catch BadExit first. Need to handle BadExits asynchronously for non-blocking commands, may be a callbacks can be provided to check for success/errors (take inspiration from JQuery).
 * Loops
@@ -48,7 +46,11 @@
 * String operations (slicing, sub-scripting, replacement)
 * Functions
     * Check if the return keyword can be avoided. Using a mandatory else part for if may help. Use match when if/elif/else becomes cumbersome.
-    * doc strings
+    * Doc strings
+    * func f(x)
+         echo $x
+      end
+    * Nested functions?
 * End all blocks with the end keyword instead of using braces. This way the overhead of an opening brace can be avoided. 
 * Variable scopes, persistence (use json/sqlite?)
 * Exceptions (try, catch, finally)
@@ -112,8 +114,10 @@
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 # Done
+* Translate escapes
+* Remove the ExecutionContext class and use plain dictionaries instead
+    * Check if we really need to differentiate between commands and variables. If not then replace the execution context class with a single dictionary containing both commands and variables. Use a separate dictionary for script options.
 
-* string escapes
 * Generate custom ASG (Abstract semantic graph) using the node visitor. 
     * ASG nodes should be callables
     * Executing the root node should start an inorder execution from left to right. Non leaf nodes may also execute code and/or aggregate the results of their child nodes.
