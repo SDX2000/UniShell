@@ -1,5 +1,5 @@
 # Todo next
-* Carry out string interpolation at parse time.
+* Pass the whole script to the parser instead of executing it line by line
 
 # Todo
 ## Implement language features
@@ -102,6 +102,7 @@
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 # Done
+* Change the string interpolation logic to split the string using the regex instead of substituting the values at parse time. The values should be evaluated and concatenated at run time (__call__)
 * Introduced integer and float in grammar
 * Generate custom ASG
 * command substitution $(pwd)

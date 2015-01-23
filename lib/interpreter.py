@@ -1,10 +1,11 @@
 import re
 import sys
+import traceback
 
 from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
 from arpeggio.cleanpeg import ParserPEG
 
-from .logger  import dbg, getDebugLevel
+from lib.logger import dbg, getDebugLevel
 from lib import partition
 
 grammar = """
@@ -19,14 +20,15 @@ grammar = """
     string           = quoted_str / bare_str
     literal          = string / number
     expr_cmd         = cmd / expr
-    expr             = eval_var / eval / literal
+    expr             = eval_var / eval_expr_cmd / literal
     flag             = ("-" ident / "--" ident)
     comment          = "#" r'.*'
     cmd              = ident (WS (flag / expr))*
     eval_bare_var    = "$" ident
     eval_quoted_var  = "${" ident "}"
     eval_var         = eval_bare_var / eval_quoted_var
-    eval             = "$(" WS? expr_cmd WS? ")"
+    eval_expr_cmd    = "$(" WS? expr_cmd WS? ")"
+    eval             = eval_var / eval_expr_cmd
     stmnt            = WS? expr_cmd? WS? comment? WS?
     prog             = (stmnt EOL)* stmnt? EOF
 """
@@ -34,7 +36,8 @@ grammar = """
 #BUG getDebugLevel() is being called even before main has a chance to set it
 #gDebug = getDebugLevel() > 0
 gDebug = False
-gParser = ParserPEG(grammar, "prog", skipws = False, debug = gDebug)
+gProgParser = ParserPEG(grammar, "prog", skipws = False, debug = gDebug)
+gEvalParser = ParserPEG(grammar, "eval", skipws = False, debug = gDebug)
 
 
 class Flag:
@@ -59,8 +62,8 @@ class Prog:
         dbg("Prog result:", result)
         return result
 
-    def __repr_(self):
-        return repr(self.elements)
+    def __repr__(self):
+        return repr("Prog({})".format(repr(self.expressions)))
 
 class Command:
     def __init__(self, cmdName, allArgs):
@@ -78,66 +81,70 @@ class Command:
     
     def __call__(self, context):
         result = ""
-
+        
         try:
             cmd = context.getCmd(self.cmdName)
             try:
+                self.args = list(map(lambda x: x(context) if callable(x) else x, self.args))
                 result = cmd(self.args, self.flags, context)
             except Exception as e:
                 print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
+                dbg(traceback.format_exc(), file=sys.stderr)
         except KeyError:
             print("ERROR: Unkown command: {}".format(self.cmdName), file=sys.stderr)
+        dbg("{} result:{}".format(repr(self), result))
         return result
 
     def __repr__(self):
         return "Command({}, args={}, flags={})".format(self.cmdName, self.args, self.flags)
 
+
 class String:
-    #TODO: Incorporate this regex into the main grammar
-    interpRegex = re.compile(r'\$(?P<var0>\w(\w|\d|_)*)|\${(?P<var1>.*?)}|\$\((?P<cmd0>.*?)\)')
+    splitterRegex = re.compile(r'(\$[a-zA-Z_](?:\w|\d|_)*|\$\{[a-zA-Z_](?:\w|\d|_)*\}|\$\(.*?\))')
     
     def __init__(self, string):
         if not type(string) is str:
             raise TypeError("Argument is not a string")
         self.string = string
-    
+        dbg("String init:", string)
+
+        parts = self.splitterRegex.split(self.string)
+
+        self.parts = list(map(lambda x: parseEvalExpr(x) if x.startswith('$') else x, parts))
+
+        dbg("String parts:", repr(self.parts))
+
     def __call__(self, context):
-        def replacer(matchObj):
-            name = matchObj.group('var0') or matchObj.group('var1')
-            result = ""
-            if name:
-                try:
-                    result = context.getVar(name)
-                except KeyError:
-                    pass
+        result = ""
+        
+        for part in self.parts:
+            if callable(part):
+                result += str(part(context))
             else:
-                cmd = matchObj.group('cmd0')
-                if cmd:
-                   prog = parse(cmd)
-                   result = prog(context)[0]
-                       
-            dbg("replacer.result=", repr(result))
-            return str(result)
-
-        result = self.interpRegex.sub(replacer, self.string)
-
-        dbg("STRING RETURNING:{}".format(result))
+                result += str(part)
+        
+        dbg("String({}) returning:{}".format(repr(self.string), repr(result)))
+        
         return result
 
     def __repr__(self):
-        return repr(self.string)
+        return "String({})".format(repr(self.parts))
 
-class Lookup:
+
+class VarLookup:
     def __init__(self, varName):
         if not type(varName) is str:
             raise TypeError("Argument is not a string")
         self.varName = varName
 
     def __call__(self, context):
-        return context.getVar(self.varName)
+        result = context.getVar(self.varName)
+        dbg("VarLookup({}) returning:{}".format(repr(self.varName), repr(result)))
+        return result
 
     def __repr__(self):
-        return "Lookup({})".format(repr(self.varName))
+        return "VarLookup({})".format(repr(self.varName))
+
 
 class UniShellVisitor(PTNodeVisitor):
 
@@ -204,8 +211,15 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_eval_var(self, node, children):
         dbg("EVAL_VAR NODE VALUE:", repr(node.value))
         dbg("EVAL_VAR CHILDREN:", children)
-        result = Lookup(children[0])
+        result = VarLookup(children[0])
         dbg("EVAL_VAR RETURNING:{}".format(repr(result)))
+        return result
+
+    def visit_eval(self, node, children):
+        dbg("EVAL NODE VALUE:", repr(node.value))
+        dbg("EVAL CHILDREN:", children)
+        result = children[0]
+        dbg("EVAL RETURNING:{}".format(repr(result)))
         return result
 
     def visit_quoted_str(self, node, children):
@@ -285,12 +299,21 @@ gVisitor = UniShellVisitor(debug = gDebug)
 
 def parse(source):
     dbg("parse({}) called".format(repr(source)))
-    parse_tree = gParser.parse(source)
+    parse_tree = gProgParser.parse(source)
     prog = visit_parse_tree(parse_tree, gVisitor)
     return prog
+
+def parseEvalExpr(source):
+    dbg("parseEvalExpr({}) called".format(repr(source)))
+    parse_tree = gEvalParser.parse(source)
+    prog = visit_parse_tree(parse_tree, gVisitor)
+    return prog
+
     
 def evaluate(source, context):
+    dbg("----------PARSING---------")
     prog = parse(source)
+    dbg("----------RUNNING---------")
     return prog(context)
 
 def execute(source, context):

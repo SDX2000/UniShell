@@ -25,6 +25,7 @@ import collections
 from os import path
 from pprint import pprint
 from docopt import docopt
+from arpeggio import NoMatch
 
 from commands import *
 from lib.logger import setDebugLevel, dbg
@@ -36,6 +37,16 @@ version = "0.0.1"
 gInitDir = None
 gContext = None
 
+gBanner = """\
+ _    _       _  _____ _          _ _ 
+| |  | |     (_)/ ____| |        | | |
+| |  | |_ __  _  (___ | |__   ___| | |
+| |  | |  _ \| |\___ \|  _ \ / _ \ | |
+| |__| | | | | |____) | | | |  __/ | |
+ \____/|_| |_|_|_____/|_| |_|\___|_|_|
+"""
+
+
 def init():
     global gInitDir
     global gContext
@@ -46,7 +57,7 @@ def init():
     else:
         os.chdir(gInitDir)
 
-    #TODO: Make gContext local
+    # TODO: Make gContext local
     gContext = ExecutionContext()
 
     gContext.setCmd("stat", cmdStat)
@@ -65,14 +76,15 @@ def init():
 
 
 def printBanner():
-    print("UniShell Version {}".format(version))
+    print(gBanner)
+    print("Version {}".format(version))
     print("Copyright (C) Sandeep Datta, 2015")
     print("")
 
 
-
 def getCtx():
     return gContext
+
 
 def startRepl():
     printBanner()
@@ -88,6 +100,7 @@ def startRepl():
             break
         execute(line, getCtx())
 
+
 def main(args):
     init()
 
@@ -95,7 +108,10 @@ def main(args):
     if args['-c']:
         doRepl = False
         for cmd in args['COMMAND']:
-            execute(cmd, getCtx())
+            try:
+                evaluate(cmd, getCtx())
+            except NoMatch as e:
+                print("SYNTAX ERROR: ", e)
     
     for arg in args['FILE']:
         doRepl = False
@@ -110,7 +126,12 @@ def main(args):
             
             with open(arg, "r") as f:
                 for line in f:
-                    execute(line, getCtx())
+                    if getDebugLevel():
+                        print("#{}".format(line), end='')
+                    try:
+                        evaluate(line, getCtx())
+                    except NoMatch as e:
+                        print("SYNTAX ERROR: ", e)
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:
@@ -128,3 +149,4 @@ if __name__ == '__main__':
         setDebugLevel(1)
     dbg("Docopt args:{}".format(repr(args)))
     main(args)
+

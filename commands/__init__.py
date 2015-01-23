@@ -1,12 +1,10 @@
 import os
 import sys
 
-
 from objects import FileInfo
 from pprint import pprint
 
-
-from lib.logger  import dbg, getDebugLevel
+from lib.logger import dbg, getDebugLevel
 from lib.interpreter import String
 from lib.exceptions import ArgumentError
 
@@ -21,11 +19,13 @@ def cmdStat(args, flags, context):
     Display file or file system status
     """
     if not args:
-        ArgumentError("Expecting at least one argument")
+        raise ArgumentError("No argument supplied.")
 
-        
-    
-    filePath = args[0](context)
+    filePath = args[0]
+
+    if not type(args[0]) is String:
+        raise ArgumentError("Argument must be a string.")
+
     return FileInfo(filePath)
 
 
@@ -34,10 +34,10 @@ def cmdChangeDirectory(args, flags, context):
     Change directory
     """
     if args and not type(args[0]) is String:
-        ArgumentError("The argument supplied is of incorrect type.")
+        raise ArgumentError("The argument supplied is of incorrect type.")
     
     try:
-        os.chdir(args[0](context))
+        os.chdir(args[0])
     except IndexError:
         pass
 
@@ -49,7 +49,7 @@ def cmdExit(args, flags, context):
     Exit shell
     """
     if args and not type(args[0]) is int:
-        ArgumentError("The argument supplied is of incorrect type.")
+        raise ArgumentError("The argument supplied is of incorrect type.")
         
     try:
         sys.exit(args[0])
@@ -62,7 +62,7 @@ def cmdClearScreen(args, flags, context):
     Clear screen
     """
     if args: 
-        ArgumentError("No arguments expected")
+        raise ArgumentError("No arguments expected")
     print("\x1Bc", end="")
 
 def cmdEcho(args, flags, context):
@@ -71,8 +71,8 @@ def cmdEcho(args, flags, context):
     """
     #NOTE: args must be a list of Strings or literals
         
-    msg = ' '.join(map(lambda x: x(context) if callable(x) else str(x), args))
-    #print("ECHO>", msg)
+    msg = ' '.join(map(lambda x: str(x), args))
+    print(msg)
     return msg
 
 
@@ -85,13 +85,22 @@ def cmdSet(args, flags, context):
 
         -x    Export variable to child processes
     """
-    #print("args:{} flags:{}".format(args, flags))
+    # print("args:{} flags:{}".format(args, flags))
 
-    name = args[0](context)
-    value = args[1](context)
-    exported = len([flag for flag in flags if flag.name == "x"]) > 0
+    try:
+        name = args[0]
+        if not type(name) is str:
+            raise ArgumentError("The variable name needs to be a string.")
+
+        value = args[1]
+    except IndexError as e:
+        raise ArgumentError("Incorrect number of arguments specified") from e
+
+    exported = any(flag.name == "x" for flag in flags)
 
     context.setVar(name, value, exported)
+
+    return value
     
 
 def cmdListDir(args, flags, context):
@@ -102,7 +111,11 @@ def cmdListDir(args, flags, context):
     Syntax: -
         ls [target_dir]
     """
-    target = (args[0](context) if args else None) or '.'
+    target = (args[0] if args else None) or '.'
+
+    if not type(target) is str:
+        raise ArgumentError("The argument needs to be a string.")
+
     for x in os.listdir(target):
         print(x)
 

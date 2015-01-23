@@ -17,5 +17,3 @@ do
 done
 
 popd
-
-popd
