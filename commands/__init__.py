@@ -34,6 +34,8 @@ def cmdChangeDirectory(args, flags, context):
 
     try:
         os.chdir(args[0])
+        # TODO: Revert hack
+        return None  # Do not print the current dir when changing the directory
     except IndexError:
         pass
 
@@ -69,7 +71,6 @@ def cmdEcho(args, flags, context):
     # NOTE: args must be a list of Strings or literals
 
     msg = ' '.join(map(lambda x: str(x), args))
-    print(msg)
     return msg
 
 
@@ -100,57 +101,6 @@ def cmdSet(args, flags, context):
     if exported:
         context["exported_vars"][name] = True
 
-    return value
-
-
-def cmdSetOpt(args, flags, context):
-    """
-    Set script option.
-
-    Syntax:-
-        setopt option value
-    """
-    # print("args:{} flags:{}".format(args, flags))
-
-    try:
-        name = args[0]
-        if not type(name) is str:
-            raise ArgumentError("The option name needs to be a string.")
-        if not name in context["options"]:
-            raise ArgumentError("Invalid option {}".format(name))
-        value = args[1]
-    except IndexError as e:
-        raise ArgumentError("Incorrect number of arguments specified") from e
-
-    if type(value) is str:
-        if value.lower() in ["on", "true", "yes"]:
-            value = True
-        elif value.lower() in ["off", "false", "no"]:
-            value = False
-
-    context["options"][name] = [value]
-
-    return value
-
-def cmdGetOpt(args, flags, context):
-    """
-    Get script option.
-
-    Syntax:-
-        getopt option
-    """
-    # print("args:{} flags:{}".format(args, flags))
-
-    try:
-        name = args[0]
-        if not type(name) is str:
-            raise ArgumentError("The option name needs to be a string.")
-        if not name in context["options"]:
-            raise ArgumentError("Invalid option {}".format(name))
-    except IndexError as e:
-        raise ArgumentError("Incorrect number of arguments specified") from e
-
-    return context["options"][name][-1]
 
 def cmdPushOpt(args, flags, context):
     """
@@ -181,6 +131,28 @@ def cmdPushOpt(args, flags, context):
 
     return value
 
+
+def cmdPeekOpt(args, flags, context):
+    """
+    Get script option.
+
+    Syntax:-
+        getopt option
+    """
+    # print("args:{} flags:{}".format(args, flags))
+
+    try:
+        name = args[0]
+        if not type(name) is str:
+            raise ArgumentError("The option name needs to be a string.")
+        if not name in context["options"]:
+            raise ArgumentError("Invalid option {}".format(name))
+    except IndexError as e:
+        raise ArgumentError("Incorrect number of arguments specified") from e
+
+    return context["options"][name][-1]
+
+
 def cmdPopOpt(args, flags, context):
     """
     Pop script option from the options stack.
@@ -199,7 +171,13 @@ def cmdPopOpt(args, flags, context):
     except IndexError as e:
         raise ArgumentError("Incorrect number of arguments specified") from e
 
-    return context["options"][name].pop()
+    optHist = context["options"][name]
+
+    if len(optHist) <= 1:
+        raise IndexError("Cannot pop the default value off.")
+
+    return optHist.pop()
+
 
 def cmdGetOptions(args, flags, context):
     return context["options"]

@@ -1,0 +1,22 @@
+#!/usr/bin/env unishell
+echo "================"
+echo $SCRIPT_NAME
+echo "================"
+
+options
+echo
+pushopt autoprint false
+123
+"Hello"
+"World"
+pushopt autoprint on
+123
+"Hello"
+"World"
+echo pushopt echo on
+pushopt echo on
+options
+echo popopt echo
+popopt echo
+options
+echo Auto print: $(peekopt autoprint)

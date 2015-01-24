@@ -35,7 +35,7 @@ grammar = """
 """
 
 # BUG getDebugLevel() is being called even before main has a chance to set it
-#gDebug = getDebugLevel() > 0
+# gDebug = getDebugLevel() > 0
 gDebug = False
 gProgParser = ParserPEG(grammar, "prog", skipws=False, debug=gDebug)
 gEvalParser = ParserPEG(grammar, "eval", skipws=False, debug=gDebug)
@@ -290,9 +290,9 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("CMD NODE VALUE:", repr(node.value))
         dbg("CMD CHILDREN:", repr(children))
 
-        #TODO: return a (stdin, stderr) tuple instead? Throw a BadExit
-        #exception on a bad exit code.
-        #args = children[1] if len(children) > 1 else []
+        # TODO: return a (stdin, stderr) tuple instead? Throw a BadExit
+        # exception on a bad exit code.
+        # args = children[1] if len(children) > 1 else []
         cmdName = children[0]
         args = children[1:]
         result = Command(cmdName, args)

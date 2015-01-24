@@ -1,5 +1,6 @@
 # Todo next
-* Add an autoprint script option (setopt autoprint on)
+* Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
+* Implement an auto command loader. Scan the commands module for function names beginning with cmd.
 * Add a no banner flag (--no-banner)
 
 # Todo
@@ -81,10 +82,8 @@
 * Find/implement pure python implementation of readline and ncurses for windows.
 ### Misc
 * Script directives
-    * pushopt echo off; popopt echo, getopt echo
     * Add an option to echo commands as they are being executed. $(setopt echo on).
-    * Add an autoprint script option
-        * When autoprint is true the output of all commands should be printed even if it is not printed explicitly. The output should not be printed twice if echo/set is called.
+    
     * user defined prompts ("prompt", "prompt2")
 * choose_prompt, save_prompt_as (use ncurses for UI if required), use separate option variables space for storing prompts.
 
@@ -117,7 +116,9 @@
 # Done
 * Script directives
     * Create a separate option variable/command space.
-    * setopt echo on; setopt echo off; 
+    * pushopt, popopt, peekopt
+    * Add an autoprint script option
+        * When autoprint is true the output of all commands should be printed even if it is not printed explicitly. The output should not be printed twice if echo/set is called.
 * Add a check syntax option (-s). Run the parser and quit when this option is specified.
 * Translate escapes
 * Remove the ExecutionContext class and use plain dictionaries instead
