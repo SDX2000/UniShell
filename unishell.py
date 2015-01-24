@@ -22,7 +22,6 @@ from os import path
 from docopt import docopt
 from arpeggio import NoMatch
 
-
 from commands import *
 from lib.formatters import printDict, printList
 from lib.logger import setDebugLevel, dbg
@@ -71,8 +70,7 @@ def init():
             , "env": cmdEnv
             , "echo": cmdEcho
             , "ls": cmdListDir
-            , "setopt": cmdSetOpt
-            , "getopt": cmdGetOpt
+            , "peekopt": cmdPeekOpt
             , "pushopt": cmdPushOpt
             , "popopt": cmdPopOpt
             , "options": cmdGetOptions
@@ -85,13 +83,9 @@ def init():
         "options": {
             "prompt": [lambda a, f, ctx: os.getcwd() + "> "]
             , "echo": [False]
-            , "autoprint": [False]
+            , "autoprint": [True]
         }
     }
-
-
-def getOption(name):
-    return gContext["options"][name][-1]
 
 
 def printBanner():
@@ -109,18 +103,35 @@ def getVars():
     return gContext["vars"]
 
 
-def execute(source, context):
-    result = evaluate(source, context)
-    dbg("RESULT:", repr(result))
+def getOption(name):
+    return gContext["options"][name][-1]
 
-    if result:
-        for r in result:
-            if issubclass(type(r), list):
-                printList(r)
-            elif issubclass(type(r), dict):
-                printDict(r)
-            elif r is not None:
-                print(str(r))
+
+def execute(source, context):
+    try:
+        dbg("----------PARSING---------")
+        prog = parse(source)
+
+        if not gCheckSyntax:
+            dbg("----------RUNNING---------")
+            result = prog(context)
+
+            dbg("RESULT:", repr(result))
+            autoPrint = getOption("autoprint")
+
+            if result and autoPrint:
+                for r in result:
+                    if issubclass(type(r), list):
+                        printList(r)
+                    elif issubclass(type(r), dict):
+                        printDict(r)
+                    elif r is not None:
+                        print(str(r))
+    except NoMatch as e:
+        print("SYNTAX ERROR: ", e)
+    else:
+        if gCheckSyntax:
+            print("Syntax OK.")
 
 
 def startRepl():
@@ -137,10 +148,8 @@ def startRepl():
         except EOFError:
             print("")
             break
-        try:
-            execute(line, getCtx())
-        except NoMatch as e:
-            print("SYNTAX ERROR: ", e)
+
+        execute(line, getCtx())
 
 
 def evalPrologue():
@@ -163,16 +172,8 @@ def main(args):
     if args['-c']:
         doRepl = False
         for cmd in args['COMMAND']:
-            try:
-                if not gCheckSyntax:
-                    execute(cmd, getCtx())
-                else:
-                    parse(cmd)
-            except NoMatch as e:
-                print("SYNTAX ERROR: ", e)
-            else:
-                if gCheckSyntax:
-                    print("Syntax OK.")
+            execute(cmd, getCtx())
+
     for arg in args['FILE']:
         doRepl = False
         try:
@@ -186,16 +187,7 @@ def main(args):
 
             with open(arg, "r") as f:
                 source = f.read()
-                try:
-                    if not gCheckSyntax:
-                        evaluate(source, getCtx())
-                    else:
-                        parse(source)
-                except NoMatch as e:
-                    print("SYNTAX ERROR: ", e)
-                else:
-                    if gCheckSyntax:
-                        print("Syntax OK.")
+                execute(source, getCtx())
         except FileNotFoundError as e:
             print("ERROR: {}".format(e), file=sys.stderr)
         finally:
