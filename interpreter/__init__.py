@@ -36,7 +36,7 @@ gGrammar = """
 # Note: Cannot move this ASG node out to the ASG folder since there is a circular
 # dependency issue.
 class String:
-    def __init__(self, parts, interpreter):
+    def __init__(self, parts):
         dbg("String init:", parts)
         self.parts = parts
 
@@ -59,9 +59,8 @@ class String:
 
 # noinspection PyMethodMayBeStatic
 class UniShellVisitor(PTNodeVisitor):
-    def __init__(self, interpreter, debug=False):
+    def __init__(self, debug=False):
         super().__init__(debug=debug)
-        self.interpreter = interpreter
 
     def visit_WS(self, node, children):
         return None
@@ -169,7 +168,7 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("STRING NODE VALUE:", repr(node.value))
         dbg("STRING CHILDREN:", repr(children))
 
-        result = String(children[0], self.interpreter)
+        result = String(children[0])
 
         dbg("STRING RETURNING:{}".format(result))
         return result
@@ -219,7 +218,7 @@ class Interpreter:
         self.debug = getDebugLevel() > 0
         self.programParser = ParserPEG(grammar, "program", skipws=False, debug=self.debug)
         self.evalParser = ParserPEG(grammar, "eval", skipws=False, debug=self.debug)
-        self.visitor = UniShellVisitor(interpreter=self, debug=self.debug)
+        self.visitor = UniShellVisitor(debug=self.debug)
 
     def parse(self, source):
         dbg("parse({}) called".format(repr(source)))
