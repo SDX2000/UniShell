@@ -18,15 +18,15 @@ Options:
 
 # noinspection PyUnresolvedReferences
 import readline
-
 from os import path
+
 from docopt import docopt
 from arpeggio import NoMatch
 
 from commands import *
 from lib.formatters import printDict, printList
 from lib.logger import setDebugLevel, dbg
-from lib.interpreter import parse, evaluate
+from interpreter import parse, evaluate
 from lib.prologue import prologue
 
 gBanner = """\
