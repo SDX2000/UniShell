@@ -3,7 +3,7 @@ from os import path
 from datetime import datetime
 
 from .PipelineObject import PipelineObject
-from lib.decorators import visible
+from formatters.decorators import visible
 
 
 def test():

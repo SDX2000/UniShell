@@ -19,15 +19,14 @@ Options:
 
 # noinspection PyUnresolvedReferences
 import readline
-
 from os import path
+from inspect import getmembers
 
 from docopt import docopt
-from inspect import getmembers
 from arpeggio import NoMatch
 
 from commands import *
-from lib.formatters import printDict, printList
+from formatters import printDict, printList
 from lib.logger import setDebugLevel, dbg
 from interpreter import parse, evaluate
 from lib.prologue import prologue
