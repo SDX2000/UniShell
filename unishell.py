@@ -19,9 +19,11 @@ Options:
 
 # noinspection PyUnresolvedReferences
 import readline
+
 from os import path
 
 from docopt import docopt
+from inspect import getmembers
 from arpeggio import NoMatch
 
 from commands import *
@@ -47,6 +49,14 @@ gOptions = None
 gCheckSyntax = False
 
 
+def getCommands():
+    import commands
+    members = getmembers(commands)
+    c = filter(lambda x: x[0].startswith("cmd"), members)
+    c = map(lambda x: (x[0][3:].lower(), x[1]), c)
+    return dict(list(c))
+
+
 def init():
     global gInitDir
     global gContext
@@ -61,24 +71,10 @@ def init():
     else:
         os.chdir(gInitDir)
 
+    commands = getCommands()
+
     gContext = {
-        "vars": {
-            "stat": cmdStat
-            , "cd": cmdChangeDirectory
-            , "exit": cmdExit
-            , "quit": cmdExit
-            , "cls": cmdClearScreen
-            , "set": cmdSet
-            , "env": cmdEnv
-            , "echo": cmdEcho
-            , "ls": cmdListDir
-            , "peekopt": cmdPeekOpt
-            , "pushopt": cmdPushOpt
-            , "popopt": cmdPopOpt
-            , "options": cmdGetOptions
-            , "help": cmdHelp
-            , "INIT_DIR": gInitDir
-        },
+        "vars": commands,
         "exported_vars": {
 
         },
@@ -88,6 +84,8 @@ def init():
             , "autoprint": [True]
         }
     }
+
+    gContext["vars"]["INIT_DIR"] = gInitDir
 
 
 def printBanner():
@@ -156,6 +154,7 @@ def startRepl(noBanner):
 
 
 def evalPrologue():
+    dbg("Evaluating prologue")
     try:
         evaluate(prologue, getCtx())
     except NoMatch as e:

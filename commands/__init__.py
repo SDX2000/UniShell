@@ -26,7 +26,7 @@ def cmdStat(args, flags, context):
     return FileInfo(filePath)
 
 
-def cmdChangeDirectory(args, flags, context):
+def cmdCd(args, flags, context):
     """
     Change directory
     """
@@ -56,7 +56,7 @@ def cmdExit(args, flags, context):
         sys.exit(0)
 
 
-def cmdClearScreen(args, flags, context):
+def cmdCls(args, flags, context):
     """
     Clear screen
     """
@@ -180,11 +180,11 @@ def cmdPopOpt(args, flags, context):
     return optHist.pop()
 
 
-def cmdGetOptions(args, flags, context):
+def cmdOptions(args, flags, context):
     return context["options"]
 
 
-def cmdListDir(args, flags, context):
+def cmdLs(args, flags, context):
     """
     List contents of target directory. If no directory is specified use
     current directory as target.
