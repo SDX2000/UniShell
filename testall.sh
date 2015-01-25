@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd $(dirname $0) > /dev/null
+pushd "$(dirname $0)" > /dev/null
 SCRIPT_DIR=$(pwd -P)
 popd > /dev/null
 
@@ -13,22 +13,25 @@ TESTS_DIR=$SCRIPT_DIR/tests
 REF_DIR=reference_output
 OUTPUT_DIR=output
 
-pushd $TESTS_DIR > /dev/null
+pushd "$TESTS_DIR" > /dev/null
 
-mkdir -p $OUTPUT_DIR >/dev/null 2>&1
+mkdir -p "$OUTPUT_DIR" >/dev/null 2>&1
+mkdir -p "$REF_DIR" >/dev/null 2>&1
 
 for i in $(ls *.ush *.sh 2> /dev/null);
 do
     echo RUNNING: $PWD/$i
     OUTPUT_FILE=$OUTPUT_DIR/$i.txt
 
-    eval ./$i > $OUTPUT_FILE 2>&1;
-
-    if [ ! -d $REF_DIR ]; then
-        continue;
-    fi
+    eval ./$i > "$OUTPUT_FILE" 2>&1;
 
     REF_FILE=$REF_DIR/$i.txt
+
+    if [ ! -f "$REF_FILE" ]; then
+        echo "Reference file for test $i does not exist, copying current output to the $REF_DIR folder."
+        cp "$OUTPUT_FILE" "$REF_DIR"
+        continue
+    fi
 
     diff "$OUTPUT_FILE" "$REF_FILE" >/dev/null 2>&1
 
@@ -40,9 +43,6 @@ do
     echo
 done
 
-if [ ! -d $REF_DIR ]; then
-    echo "Reference directory does not exist. Renaming the output folder ($OUTPUT_DIR) to create the new reference directory ($REF_DIR)."
-    mv $OUTPUT_DIR $REF_DIR
-fi
+
 
 popd > /dev/null
