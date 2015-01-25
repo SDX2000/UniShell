@@ -1,0 +1,26 @@
+================
+options.ush
+================
+autoprint: ['True', 'False', 'True']
+echo: ['False']
+prompt: ['<lambda>']
+
+False
+123
+Hello
+World
+True
+123
+Hello
+World
+pushopt echo on
+True
+autoprint: ['True', 'False', 'True']
+echo: ['False']
+prompt: ['<lambda>']
+popopt echo
+True
+autoprint: ['True', 'False', 'True']
+echo: ['False']
+prompt: ['<lambda>']
+Auto print: True

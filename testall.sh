@@ -1,26 +1,48 @@
 #!/bin/bash
 
-export PATH=$PATH:$PWD
+pushd $(dirname $0) > /dev/null
+SCRIPT_DIR=$(pwd -P)
+popd > /dev/null
 
-pushd tests
+export PATH=$PATH:$SCRIPT_DIR
 
-unishell -c '"Hello A"'
+TESTS_DIR=$SCRIPT_DIR/tests
 
-unishell -c 'set msg "Hello B"' -c '$msg'
+#echo TESTS_DIR=$TESTS_DIR
 
-unishell -c 'set msg "Hello C"; $msg'
+REF_DIR=reference_output
+OUTPUT_DIR=output
 
-unishell -i  --no-banner -c 'exit'
+pushd $TESTS_DIR > /dev/null
 
-unishell -c 'exit 1'
-unishell -c 'exit 2'
+mkdir -p $OUTPUT_DIR >/dev/null 2>&1
 
-
-for i in *.ush;
+for i in $(ls *.ush *.sh 2> /dev/null);
 do
+    echo RUNNING: $PWD/$i
+    OUTPUT_FILE=$OUTPUT_DIR/$i.txt
+
+    eval ./$i > $OUTPUT_FILE 2>&1;
+
+    if [ ! -d $REF_DIR ]; then
+        continue;
+    fi
+
+    REF_FILE=$REF_DIR/$i.txt
+
+    diff "$OUTPUT_FILE" "$REF_FILE" >/dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo PASS
+    else
+        echo FAIL: diff "$TESTS_DIR/$OUTPUT_FILE" "$TESTS_DIR/$REF_FILE"
+    fi
     echo
-    echo RUNNING: $PWD/${i}
-    eval ./${i};
 done
 
-popd
+if [ ! -d $REF_DIR ]; then
+    echo "Reference directory does not exist. Renaming the output folder ($OUTPUT_DIR) to create the new reference directory ($REF_DIR)."
+    mv $OUTPUT_DIR $REF_DIR
+fi
+
+popd > /dev/null

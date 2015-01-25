@@ -1,0 +1,8 @@
+ERROR: (TypeError) 'module' object is not callable
+ERROR: (TypeError) 'module' object is not callable
+================
+test.ush
+================
+START_DIR=/home/sandeepd/source/tools/unishell/tests
+
+

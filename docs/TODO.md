@@ -66,7 +66,7 @@
     * Let numbers be value types and strings be immutable (use COW (Copy on write) when someone tries to modify them)
 * namespaces?
 * modules (import abc)
-    
+* A script should return the "exit code" of its last command if an explicit call to the exit command is not used. An exit code of 1 should be returned when an unhandled exception is caught.
 * Interop
     * Python
         * import python modules

@@ -1,0 +1,10 @@
+Variables
+=========
+INIT_DIR=/home/sandeepd/source/tools/unishell/tests
+SCRIPT_DIR=/home/sandeepd/source/tools/unishell/tests
+SCRIPT_NAME=test1.ush
+SCRIPT_PATH=/home/sandeepd/source/tools/unishell/tests/test1.ush
+a=b
+================
+test1.ush
+================

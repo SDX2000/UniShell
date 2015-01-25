@@ -1,0 +1,7 @@
+================
+commands.ush
+================
+INIT_DIR=/home/sandeepd/source/tools/unishell/tests
+SCRIPT_PATH=/home/sandeepd/source/tools/unishell/tests/commands.ush
+SCRIPT_DIR=/home/sandeepd/source/tools/unishell/tests
+SCRIPT_NAME=commands.ush

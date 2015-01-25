@@ -1,0 +1,10 @@
+ERROR: Unknown command: bad_command
+ERROR: (ArgumentError) (ArgumentError(...), 'No argument supplied.')
+ERROR: (ArgumentError) (ArgumentError(...), 'Incorrect number of arguments specified')
+================
+bad_input.ush
+================
+
+
+
+

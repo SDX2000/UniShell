@@ -26,7 +26,7 @@ from docopt import docopt
 from arpeggio import NoMatch
 
 from commands import *
-from formatters import printDict, printList
+from formatters import printDict, printList, printObject
 from lib.logger import setDebugLevel, dbg
 from interpreter import parse, evaluate
 from lib.prologue import prologue
@@ -125,7 +125,7 @@ def execute(source, context):
                     elif issubclass(type(r), dict):
                         printDict(r)
                     elif r is not None:
-                        print(str(r))
+                        printObject(r)
     except NoMatch as e:
         print("SYNTAX ERROR: ", e)
     else:

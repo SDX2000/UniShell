@@ -207,7 +207,7 @@ def cmdEnv(args, flags, context):
     """
     print("Variables")
     print("=========")
-    for varName in context["vars"].keys():
+    for varName in sorted(context["vars"].keys()):
         value = context["vars"][varName]
         if not callable(value):
             print("{}{}={}".format("(exported) " if varName in context["exported_vars"] else "", varName, value))
@@ -219,7 +219,7 @@ def cmdHelp(args, flags, context):
     """
     print("Commands")
     print("========")
-    for varName in context["vars"].keys():
+    for varName in sorted(context["vars"].keys()):
         value = context["vars"][varName]
         if callable(value):
             print("{}{}={}".format("(exported) " if varName in context["exported_vars"] else "", varName, value))

@@ -1,0 +1,10 @@
+================
+var_subst.ush
+================
+Hi there
+Hi there
+Hi there.
+hello world
+hello world
+hello world
+helloXworld.
