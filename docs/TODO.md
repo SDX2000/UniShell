@@ -1,5 +1,4 @@
 # Todo next
-* BUG: Some tests which output absolute path names will fail on other machines. Either create a program to parse the diff results and discard such differences OR create a mask file which can be applied to both the files being compared such that the comparison is a success if the unmasked areas match. 
 * BUG: echo "$(echo \"$(echo a)\")" does causes a syntax errror.
 * Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
 
@@ -109,11 +108,12 @@
 * 
 
 ## Testing
-* Add a test for the -s/--syntax switch
+* BUG: Some tests which output absolute path names will fail on other machines. Either create a program to parse the diff results and discard such differences OR create a mask file which can be applied to both the files being compared such that the comparison is a success if the unmasked areas match.
 * Test on cygwin/mintty in addition to cmd.exe on windows
 
 
 # Done
+* Add a test for the -s/--syntax switch
 * Create a reference (gold) version of test script output and compare subsequent test output with it and report changes with diff.
 * Implement an auto command loader. Scan the commands module for function names beginning with cmd.
 * Add a no banner flag (--no-banner)

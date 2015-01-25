@@ -1,3 +1,4 @@
 Hello A
 Hello B
 Hello C
+SYNTAX ERROR:  Expected '-' at position (1, 6) => 'echo *===='.
