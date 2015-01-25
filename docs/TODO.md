@@ -1,4 +1,5 @@
 # Todo next
+* Add support for '-' in identifiers
 * Move the interpreter out into its own folder
 * Move ASG nodes into a separate folder within the interpreter folder
 * Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
@@ -31,7 +32,7 @@
     * Redirection: < > << >> (in command contexts)
     * Pipe:|
 
-* NOTE: Redirection and piping should work for both external and internal commands. The user should be able to pipe output from external commands to internal commands and viceversa.
+* NOTE: Redirection and piping should work for both external and internal commands. The user should be able to pipe output from external commands to internal commands and vice-versa.
 
 * External commands
     * Implement search paths
@@ -41,7 +42,7 @@
         * cat abc.txt | !grep "foobar"
         * !cmd  < abc.txt >def.txt 2>&1
     
-* Conditionals if / else / elif. Model it after python. External commands which fail should thow a BadExit. Exit codes cannot not be checked using conditionals directly you will have to catch BadExit first. Need to handle BadExits asynchronously for non-blocking commands, may be a callbacks can be provided to check for success/errors (take inspiration from JQuery).
+* Conditionals if / else / elif. Model it after python. External commands which fail should throw a BadExit. Exit codes cannot not be checked using conditionals directly you will have to catch BadExit first. Need to handle BadExits asynchronously for non-blocking commands, may be a callbacks can be provided to check for success/errors (take inspiration from JQuery).
 * Loops
 * Lists, a = [a b c], len a, a[0], a[1:]
 * Constants

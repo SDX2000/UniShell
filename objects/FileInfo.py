@@ -13,13 +13,13 @@ def test():
 
 class FileInfo(PipelineObject):
     def __init__(self, filePath):
+        super().__init__()
         self._filePath = path.abspath(filePath)
         self._statInfo = os.stat(self._filePath)
 
     @visible()
     def creationTime(self):
         return datetime.fromtimestamp(self._statInfo.st_ctime)
-
 
     @visible()
     def modificationTime(self):

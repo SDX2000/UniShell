@@ -3,7 +3,7 @@ import sys
 import codecs
 import traceback
 
-from arpeggio import PTNodeVisitor, visit_parse_tree, NoMatch
+from arpeggio import PTNodeVisitor, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
 from lib.logger import dbg, getDebugLevel
@@ -15,29 +15,29 @@ grammar = """
     integer          = r'[+-]?\d+'
     float            = r'[+-]?\d+\.\d+((e|E)[+-]?\d+)?'
     number           = float / integer
-    ident            = r'[a-zA-Z_](\w|_)*'
+    identifier       = r'[a-zA-Z_](\w|_)*'
     quoted_str       = r'"[^"]*"'
     bare_str         = r'[a-zA-Z_.:*?/@~{}](\w|[.:*?/@~{}])*'
     string           = quoted_str / bare_str
     literal          = string / number
     expr_cmd         = cmd / expr
     expr             = eval_var / eval_expr_cmd / literal
-    flag             = ("-" ident / "--" ident)
+    flag             = ("-" identifier / "--" identifier)
     comment          = "#" r'.*'
-    cmd              = ident (WS (flag / expr))*
-    eval_bare_var    = "$" ident
-    eval_quoted_var  = "${" ident "}"
+    cmd              = identifier (WS (flag / expr))*
+    eval_bare_var    = "$" identifier
+    eval_quoted_var  = "${" identifier "}"
     eval_var         = eval_bare_var / eval_quoted_var
     eval_expr_cmd    = "$(" WS? expr_cmd WS? ")"
     eval             = eval_var / eval_expr_cmd
-    stmnt            = WS? expr_cmd? WS? comment? WS?
-    prog             = (stmnt EOL)* stmnt? EOF
+    statement        = WS? expr_cmd? WS? comment? WS?
+    program          = (statement EOL)* statement? EOF
 """
 
 # BUG getDebugLevel() is being called even before main has a chance to set it
 # gDebug = getDebugLevel() > 0
 gDebug = False
-gProgParser = ParserPEG(grammar, "prog", skipws=False, debug=gDebug)
+gProgramParser = ParserPEG(grammar, "program", skipws=False, debug=gDebug)
 gEvalParser = ParserPEG(grammar, "eval", skipws=False, debug=gDebug)
 
 
@@ -50,7 +50,7 @@ class Flag:
         return "Flag(name={}, value={})".format(self.name, self.value)
 
 
-class Prog:
+class Program:
     def __init__(self, expressions):
         self.expressions = expressions
 
@@ -60,12 +60,12 @@ class Prog:
             if callable(expr):
                 result.append(expr(context))
             else:
-                result.append(expr)  #A literal
-        dbg("Prog result:", result)
+                result.append(expr)  # A literal
+        dbg("Program result:", result)
         return result
 
     def __repr__(self):
-        return repr("Prog({})".format(repr(self.expressions)))
+        return repr("Program({})".format(repr(self.expressions)))
 
 
 class Command:
@@ -94,7 +94,7 @@ class Command:
                 print("ERROR: ({}) {}".format(type(e).__name__, e), file=sys.stderr)
                 dbg(traceback.format_exc(), file=sys.stderr)
         except KeyError:
-            print("ERROR: Unkown command: {}".format(self.cmdName), file=sys.stderr)
+            print("ERROR: Unknown command: {}".format(self.cmdName), file=sys.stderr)
         dbg("{} result:{}".format(repr(self), result))
         return result
 
@@ -159,11 +159,11 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_EOL(self, node, children):
         return None
 
-    def visit_stmnt(self, node, children):
-        dbg("STMNT NODE VALUE:", repr(node.value))
-        dbg("STMNT CHILDREN:", children)
+    def visit_statement(self, node, children):
+        dbg("STATEMENT NODE VALUE:", repr(node.value))
+        dbg("STATEMENT CHILDREN:", children)
         result = children[0] if children else None
-        dbg("STMNT RETURNING:{}".format(repr(result)))
+        dbg("STATEMENT RETURNING:{}".format(repr(result)))
         return result
 
     def visit_integer(self, node, children):
@@ -244,13 +244,12 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("BARE STRING RETURNING:{}".format(repr(result)))
         return result
 
-    def visit_ident(self, node, children):
-        dbg("IDENT NODE VALUE:", repr(node.value))
-        dbg("IDENT CHILDREN:", children)
+    def visit_identifier(self, node, children):
+        dbg("IDENTIFIER NODE VALUE:", repr(node.value))
+        dbg("IDENTIFIER CHILDREN:", children)
         result = node.value
-        dbg("IDENT RETURNING:{}".format(repr(result)))
+        dbg("IDENTIFIER RETURNING:{}".format(repr(result)))
         return result
-
 
     def visit_string(self, node, children):
         dbg("STRING NODE VALUE:", repr(node.value))
@@ -268,12 +267,12 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("EXPR RETURNING:{}".format(repr(result)))
         return result
 
-    def visit_prog(self, node, children):
-        dbg("PROG NODE VALUE:", repr(node.value))
-        dbg("PROG CHILDREN:", repr(children))
-        #A prog is a list of commands or literals
-        result = Prog(children)
-        dbg("PROG RETURNING:{}".format(repr(result)))
+    def visit_program(self, node, children):
+        dbg("PROGRAM NODE VALUE:", repr(node.value))
+        dbg("PROGRAM CHILDREN:", repr(children))
+        # A program is a list of commands or literals
+        result = Program(children)
+        dbg("PROGRAM RETURNING:{}".format(repr(result)))
         return result
 
     def visit_cmd_interp(self, node, children):
@@ -281,7 +280,7 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("CMD_INTERP CHILDREN:", repr(children))
 
         result = children[0]
-        #result.echo = False
+        # result.echo = False
 
         dbg("CMD_INTERP RETURNING:{}".format(repr(result)))
         return result
@@ -306,22 +305,22 @@ gVisitor = UniShellVisitor(debug=gDebug)
 
 def parse(source):
     dbg("parse({}) called".format(repr(source)))
-    parse_tree = gProgParser.parse(source)
-    prog = visit_parse_tree(parse_tree, gVisitor)
-    return prog
+    parse_tree = gProgramParser.parse(source)
+    program = visit_parse_tree(parse_tree, gVisitor)
+    return program
 
 
 def parseEvalExpr(source):
     dbg("parseEvalExpr({}) called".format(repr(source)))
     parse_tree = gEvalParser.parse(source)
-    prog = visit_parse_tree(parse_tree, gVisitor)
-    return prog
+    program = visit_parse_tree(parse_tree, gVisitor)
+    return program
 
 
 def evaluate(source, context):
     dbg("----------PARSING---------")
-    prog = parse(source)
+    program = parse(source)
     dbg("----------RUNNING---------")
-    return prog(context)
+    return program(context)
 
 

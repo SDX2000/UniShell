@@ -3,7 +3,7 @@ echo "================"
 echo $SCRIPT_NAME
 echo "================"
 
-asdasd
+bad_command
 stat
 echo
 set

@@ -10,6 +10,7 @@ from lib.exceptions import ArgumentError
 # TODO: Implement a check signature method which will check the arguments
 # against a specified signature.
 
+
 def cmdStat(args, flags, context):
     """
     Display file or file system status
@@ -115,7 +116,7 @@ def cmdPushOpt(args, flags, context):
         name = args[0]
         if not type(name) is str:
             raise ArgumentError("The option name needs to be a string.")
-        if not name in context["options"]:
+        if name not in context["options"]:
             raise ArgumentError("Invalid option {}".format(name))
         value = args[1]
     except IndexError as e:
@@ -137,7 +138,7 @@ def cmdPeekOpt(args, flags, context):
     Get script option.
 
     Syntax:-
-        getopt option
+        peekopt option
     """
     # print("args:{} flags:{}".format(args, flags))
 
@@ -145,7 +146,7 @@ def cmdPeekOpt(args, flags, context):
         name = args[0]
         if not type(name) is str:
             raise ArgumentError("The option name needs to be a string.")
-        if not name in context["options"]:
+        if name not in context["options"]:
             raise ArgumentError("Invalid option {}".format(name))
     except IndexError as e:
         raise ArgumentError("Incorrect number of arguments specified") from e
@@ -166,7 +167,7 @@ def cmdPopOpt(args, flags, context):
         name = args[0]
         if not type(name) is str:
             raise ArgumentError("The option name needs to be a string.")
-        if not name in context["options"]:
+        if name not in context["options"]:
             raise ArgumentError("Invalid option {}".format(name))
     except IndexError as e:
         raise ArgumentError("Incorrect number of arguments specified") from e

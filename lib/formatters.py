@@ -8,6 +8,7 @@ def printList(val):
     for elem in val:
         print(elem)
 
+
 def printDict(val):
     if not issubclass(type(val), dict):
         raise ArgumentError("Val must be a dict")

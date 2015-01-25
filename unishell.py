@@ -16,6 +16,7 @@ Options:
   FILE               UniShell Script file (usually *.ush)
 """
 
+# noinspection PyUnresolvedReferences
 import readline
 
 from os import path
@@ -110,11 +111,11 @@ def getOption(name):
 def execute(source, context):
     try:
         dbg("----------PARSING---------")
-        prog = parse(source)
+        program = parse(source)
 
         if not gCheckSyntax:
             dbg("----------RUNNING---------")
-            result = prog(context)
+            result = program(context)
 
             dbg("RESULT:", repr(result))
             autoPrint = getOption("autoprint")
@@ -200,9 +201,9 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version=version)
-    if args['--trace']:
+    cmdLineArgs = docopt(__doc__, version=version)
+    if cmdLineArgs['--trace']:
         setDebugLevel(1)
-    dbg("Docopt args:{}".format(repr(args)))
-    main(args)
+    dbg("Docopt args:{}".format(repr(cmdLineArgs)))
+    main(cmdLineArgs)
 

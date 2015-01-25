@@ -1,7 +1,7 @@
 def visible(fmt="{}"):
-    def realformat(obj):
+    def realFormat(obj):
         obj.visible = True
         obj.fmt = fmt
         return property(obj)
 
-    return realformat
+    return realFormat
