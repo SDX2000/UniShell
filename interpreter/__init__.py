@@ -5,10 +5,10 @@ from arpeggio import PTNodeVisitor, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
 from .ASG import Flag, Program, Command, VarLookup
-from lib.logger import dbg
+from lib.logger import dbg, getDebugLevel
 
 
-grammar = """
+gGrammar = """
     WS               = r'[ \t]+'
     EOL              = "\n"/";"
     integer          = r'[+-]?\d+'
@@ -33,19 +33,13 @@ grammar = """
     program          = (statement EOL)* statement? EOF
 """
 
-# BUG getDebugLevel() is being called even before main has a chance to set it
-# gDebug = getDebugLevel() > 0
-gDebug = False
-gProgramParser = ParserPEG(grammar, "program", skipws=False, debug=gDebug)
-gEvalParser = ParserPEG(grammar, "eval", skipws=False, debug=gDebug)
-
 
 # Note: Cannot move this ASG node out to the ASG folder since there is a circular
 # dependency issue.
 class String:
     splitterRegex = re.compile(r'(\$[a-zA-Z_](?:\w|\d|_)*|\$\{[a-zA-Z_](?:\w|\d|_)*\}|\$\(.*?\))')
 
-    def __init__(self, string):
+    def __init__(self, string, interpreter):
         if not type(string) is str:
             raise TypeError("Argument is not a string")
         self.string = string
@@ -56,7 +50,7 @@ class String:
         def unescape(s):
             return codecs.decode(s, 'unicode_escape')
 
-        self.parts = list(map(lambda x: parseEvalExpr(x) if x.startswith('$') else unescape(x), parts))
+        self.parts = list(map(lambda x: interpreter.parseEvalExpr(x) if x.startswith('$') else unescape(x), parts))
 
         dbg("String parts:", repr(self.parts))
 
@@ -79,6 +73,10 @@ class String:
 
 # noinspection PyMethodMayBeStatic
 class UniShellVisitor(PTNodeVisitor):
+    def __init__(self, interpreter, debug=False):
+        super().__init__(debug=debug)
+        self.interpreter = interpreter
+
     def visit_WS(self, node, children):
         return None
 
@@ -181,7 +179,7 @@ class UniShellVisitor(PTNodeVisitor):
         dbg("STRING NODE VALUE:", repr(node.value))
         dbg("STRING CHILDREN:", children)
 
-        result = String(children[0])
+        result = String(children[0], self.interpreter)
 
         dbg("STRING RETURNING:{}".format(result))
         return result
@@ -226,27 +224,27 @@ class UniShellVisitor(PTNodeVisitor):
         return result
 
 
-gVisitor = UniShellVisitor(debug=gDebug)
+class Interpreter:
+    def __init__(self):
+        self.debug = getDebugLevel() > 0
+        self.programParser = ParserPEG(gGrammar, "program", skipws=False, debug=self.debug)
+        self.evalParser = ParserPEG(gGrammar, "eval", skipws=False, debug=self.debug)
+        self.visitor = UniShellVisitor(interpreter=self, debug=self.debug)
 
+    def parse(self, source):
+        dbg("parse({}) called".format(repr(source)))
+        parse_tree = self.programParser.parse(source)
+        program = visit_parse_tree(parse_tree, self.visitor)
+        return program
 
-def parse(source):
-    dbg("parse({}) called".format(repr(source)))
-    parse_tree = gProgramParser.parse(source)
-    program = visit_parse_tree(parse_tree, gVisitor)
-    return program
+    def parseEvalExpr(self, source):
+        dbg("parseEvalExpr({}) called".format(repr(source)))
+        parse_tree = self.evalParser.parse(source)
+        program = visit_parse_tree(parse_tree, self.visitor)
+        return program
 
-
-def parseEvalExpr(source):
-    dbg("parseEvalExpr({}) called".format(repr(source)))
-    parse_tree = gEvalParser.parse(source)
-    program = visit_parse_tree(parse_tree, gVisitor)
-    return program
-
-
-def evaluate(source, context):
-    dbg("----------PARSING---------")
-    program = parse(source)
-    dbg("----------RUNNING---------")
-    return program(context)
-
-
+    def evaluate(self, source, context):
+        dbg("----------PARSING---------")
+        program = self.parse(source)
+        dbg("----------RUNNING---------")
+        return program(context)

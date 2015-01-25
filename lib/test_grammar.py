@@ -18,7 +18,7 @@ from docopt import docopt
 from arpeggio import PTNodeVisitor, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
-gDebug = False
+debug = False
 
 # grammar = """
 #    escape        = r'\\\\.'
@@ -67,7 +67,7 @@ class UniShellVisitor(PTNodeVisitor):
 
 
 def parse(source):
-    gParser = ParserPEG(grammar, "program", skipws=False, debug=gDebug)
+    gParser = ParserPEG(grammar, "program", skipws=False, debug=debug)
     gVisitor = UniShellVisitor(debug=False)
 
     # print("parse({}) called".format(repr(source)))
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # print("Docopt args:{}".format(repr(args)))
 
     if args['-t']:
-        gDebug = True
+        debug = True
 
     if args['-c']:
         pprint(parse(args['COMMAND']))

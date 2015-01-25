@@ -28,8 +28,9 @@ from arpeggio import NoMatch
 from commands import *
 from formatters import printDict, printList, printObject
 from lib.logger import setDebugLevel, dbg
-from interpreter import parse, evaluate
+from interpreter import Interpreter
 from lib.prologue import prologue
+
 
 gBanner = """\
  _    _       _  _____ _          _ _
@@ -46,10 +47,12 @@ gInitDir = None
 gContext = None
 gOptions = None
 gCheckSyntax = False
+gInterpreter = None
 
 
 def getCommands():
     import commands
+
     members = getmembers(commands)
     c = filter(lambda x: x[0].startswith("cmd"), members)
     c = map(lambda x: (x[0][3:].lower(), x[1]), c)
@@ -60,6 +63,7 @@ def init():
     global gInitDir
     global gContext
     global gCheckSyntax
+    global gInterpreter
 
     dbg("Init called")
 
@@ -69,6 +73,8 @@ def init():
         gInitDir = os.getcwd()
     else:
         os.chdir(gInitDir)
+
+    gInterpreter = Interpreter()
 
     commands = getCommands()
 
@@ -109,7 +115,7 @@ def getOption(name):
 def execute(source, context):
     try:
         dbg("----------PARSING---------")
-        program = parse(source)
+        program = gInterpreter.parse(source)
 
         if not gCheckSyntax:
             dbg("----------RUNNING---------")
@@ -155,7 +161,7 @@ def startRepl(noBanner):
 def evalPrologue():
     dbg("Evaluating prologue")
     try:
-        evaluate(prologue, getCtx())
+        gInterpreter.evaluate(prologue, getCtx())
     except NoMatch as e:
         print("SYNTAX ERROR IN PROLOGUE! ", e)
 
