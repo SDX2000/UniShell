@@ -1,8 +1,6 @@
 # Todo next
-
+* Create a reference (gold) version of test script output and compare subsequent test output with it and report changes with diff.
 * Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
-
-
 
 # Todo
 ## Implement language features

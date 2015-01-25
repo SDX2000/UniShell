@@ -1,7 +1,7 @@
 import os
 import sys
 
-from pipeline import FileInfo
+from pipeline.objects import FileInfo
 from lib.exceptions import ArgumentError
 
 # TODO: Remove calls to String object once the string interpolation regex
