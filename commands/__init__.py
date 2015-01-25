@@ -1,10 +1,10 @@
 import os
 import sys
 
-from objects import FileInfo
+from pipeline import FileInfo
 from lib.exceptions import ArgumentError
 
-# TODO: Remove calls to String objects once the string interpolation regex
+# TODO: Remove calls to String object once the string interpolation regex
 # is incorporated in the main grammar
 
 # TODO: Implement a check signature method which will check the arguments
