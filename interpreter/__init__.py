@@ -3,7 +3,7 @@ import codecs
 from arpeggio import PTNodeVisitor, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
-from .ASG import Flag, Program, Command, VarLookup
+from .ASG import Flag, Program, Command, VarLookup, String
 from lib.logger import dbg, getDebugLevel
 
 gGrammar = """
@@ -31,30 +31,6 @@ gGrammar = """
     statement        = WS? expr_cmd? WS? comment? WS?
     program          = (statement EOL)* statement? EOF
 """
-
-
-# Note: Cannot move this ASG node out to the ASG folder since there is a circular
-# dependency issue.
-class String:
-    def __init__(self, parts):
-        dbg("String init:", parts)
-        self.parts = parts
-
-    def __call__(self, context):
-        result = ""
-
-        for part in self.parts:
-            if callable(part):
-                result += str(part(context))
-            else:
-                result += str(part)
-
-        dbg("String({}) returning:{}".format(repr(self.parts), repr(result)))
-
-        return result
-
-    def __repr__(self):
-        return "String({})".format(repr(self.parts))
 
 
 # noinspection PyMethodMayBeStatic
