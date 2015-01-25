@@ -1,10 +1,8 @@
 # Todo next
 * Add support for '-' in identifiers
-* Move the interpreter out into its own folder
-* Move ASG nodes into a separate folder within the interpreter folder
 * Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
 * Implement an auto command loader. Scan the commands module for function names beginning with cmd.
-* Add a no banner flag (--no-banner)
+
 
 # Todo
 ## Implement language features
@@ -117,6 +115,9 @@
 
 
 # Done
+* Add a no banner flag (--no-banner)
+* Move the interpreter out into its own folder
+* Move ASG nodes into a separate folder within the interpreter folder
 * Script directives
     * Create a separate option variable/command space.
     * pushopt, popopt, peekopt

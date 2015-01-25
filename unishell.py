@@ -2,7 +2,7 @@
 """UniShell
 
 Usage:
-  unishell [(-t | --trace)] [(-i | --interactive)] [(-c COMMAND) ...] [-s | --syntax] [FILE ...]
+  unishell [(-t | --trace)] [(-i | --interactive) [--no-banner]] [-s | --syntax] [(-c COMMAND) ...] [FILE ...]
   unishell (-h | --help)
   unishell --version
 
@@ -11,6 +11,7 @@ Options:
   -s --syntax        Check syntax but do not run anything
   -i --interactive   Start interactive shell
   -t --trace         Print debug trace messages.
+  --no-banner        Suppress unishell banner
   -h --help          Show this screen.
   --version          Show version.
   FILE               UniShell Script file (usually *.ush)
@@ -135,8 +136,9 @@ def execute(source, context):
             print("Syntax OK.")
 
 
-def startRepl():
-    printBanner()
+def startRepl(noBanner):
+    if not noBanner:
+        printBanner()
     while True:
         try:
             prompt = getOption("prompt")
@@ -197,7 +199,7 @@ def main(args):
             del getVars()["SCRIPT_NAME"]
 
     if doRepl or args['--interactive']:
-        startRepl()
+        startRepl(args['--no-banner'])
 
 
 if __name__ == '__main__':
