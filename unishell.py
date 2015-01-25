@@ -90,7 +90,7 @@ def init():
 def printBanner():
     print(gBanner)
     print("Version {}".format(version))
-    print("Copyright (C) Sandeep Datta, 2015")
+    print("Copyright (c) 2015 Sandeep Datta")
     print("")
 
 
