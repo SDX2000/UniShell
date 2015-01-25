@@ -44,7 +44,4 @@ $(+1.1e+1)
 "$(-1.1e-1)"
 "$(+1.1e+1)"
 
-
-
-#TODO: Uncomment when string escapes are supported
-#echo "$(echo \"$(echo a)\")"
+echo "$(echo \"$(echo a)\")"

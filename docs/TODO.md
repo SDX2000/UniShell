@@ -1,5 +1,5 @@
 # Todo next
-* BUG: echo "$(echo \"$(echo a)\")" does causes a syntax errror.
+* BUG: echo "$(echo \"$(echo a)\")" returns $(echo "a") instead of just 'a'. 
 * Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
 
 # Todo

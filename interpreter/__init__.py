@@ -1,4 +1,3 @@
-import re
 import codecs
 
 from arpeggio import PTNodeVisitor, visit_parse_tree
@@ -7,7 +6,6 @@ from arpeggio.cleanpeg import ParserPEG
 from .ASG import Flag, Program, Command, VarLookup
 from lib.logger import dbg, getDebugLevel
 
-
 gGrammar = """
     WS               = r'[ \t]+'
     EOL              = "\n"/";"
@@ -15,7 +13,8 @@ gGrammar = """
     float            = r'[+-]?\d+\.\d+((e|E)[+-]?\d+)?'
     number           = float / integer
     identifier       = r'[a-zA-Z_](\w|_)*'
-    quoted_str       = r'"[^"]*"'
+    escape           = r'\\\\.'
+    quoted_str       = '"' (escape / eval_expr_cmd / eval_var / r'[^"]')* '"'
     bare_str         = r'[a-zA-Z_.:*?/@~{}](\w|[.:*?/@~{}])*'
     string           = quoted_str / bare_str
     literal          = string / number
@@ -37,22 +36,9 @@ gGrammar = """
 # Note: Cannot move this ASG node out to the ASG folder since there is a circular
 # dependency issue.
 class String:
-    splitterRegex = re.compile(r'(\$[a-zA-Z_](?:\w|\d|_)*|\$\{[a-zA-Z_](?:\w|\d|_)*\}|\$\(.*?\))')
-
-    def __init__(self, string, interpreter):
-        if not type(string) is str:
-            raise TypeError("Argument is not a string")
-        self.string = string
-        dbg("String init:", string)
-
-        parts = self.splitterRegex.split(self.string)
-
-        def unescape(s):
-            return codecs.decode(s, 'unicode_escape')
-
-        self.parts = list(map(lambda x: interpreter.parseEvalExpr(x) if x.startswith('$') else unescape(x), parts))
-
-        dbg("String parts:", repr(self.parts))
+    def __init__(self, parts, interpreter):
+        dbg("String init:", parts)
+        self.parts = parts
 
     def __call__(self, context):
         result = ""
@@ -63,7 +49,7 @@ class String:
             else:
                 result += str(part)
 
-        dbg("String({}) returning:{}".format(repr(self.string), repr(result)))
+        dbg("String({}) returning:{}".format(repr(self.parts), repr(result)))
 
         return result
 
@@ -83,16 +69,23 @@ class UniShellVisitor(PTNodeVisitor):
     def visit_EOL(self, node, children):
         return None
 
+    def visit_escape(self, node, children):
+        dbg("ESCAPE NODE VALUE:", repr(node.value))
+        dbg("ESCAPE CHILDREN:", repr(children))
+        result = codecs.decode(node.value, 'unicode_escape')
+        dbg("ESCAPE RETURNING:{}".format(repr(result)))
+        return result
+
     def visit_statement(self, node, children):
         dbg("STATEMENT NODE VALUE:", repr(node.value))
-        dbg("STATEMENT CHILDREN:", children)
+        dbg("STATEMENT CHILDREN:", repr(children))
         result = children[0] if children else None
         dbg("STATEMENT RETURNING:{}".format(repr(result)))
         return result
 
     def visit_integer(self, node, children):
         dbg("INTEGER NODE VALUE:", repr(node.value))
-        dbg("INTEGER CHILDREN:", children)
+        dbg("INTEGER CHILDREN:", repr(children))
 
         result = int(node.value)
         dbg("INTEGER RETURNING:{}".format(repr(result)))
@@ -100,7 +93,7 @@ class UniShellVisitor(PTNodeVisitor):
 
     def visit_float(self, node, children):
         dbg("FLOAT NODE VALUE:", repr(node.value))
-        dbg("FLOAT CHILDREN:", children)
+        dbg("FLOAT CHILDREN:", repr(children))
 
         result = float(node.value)
         dbg("FLOAT RETURNING:{}".format(repr(result)))
@@ -108,7 +101,7 @@ class UniShellVisitor(PTNodeVisitor):
 
     def visit_number(self, node, children):
         dbg("NUMBER NODE VALUE:", repr(node.value))
-        dbg("NUMBER CHILDREN:", children)
+        dbg("NUMBER CHILDREN:", repr(children))
         result = children[0]
         dbg("NUMBER RETURNING:{}".format(repr(result)))
         return result
@@ -118,66 +111,63 @@ class UniShellVisitor(PTNodeVisitor):
 
     def visit_flag(self, node, children):
         dbg("FLAG NODE VALUE:", repr(node.value))
-        dbg("FLAG CHILDREN:", children)
+        dbg("FLAG CHILDREN:", repr(children))
         result = Flag(children[0])
         dbg("FLAG RETURNING:{}".format(repr(result)))
         return result
 
     def eval_bare_var(self, node, children):
         dbg("EVAL_BARE_VAR NODE VALUE:", repr(node.value))
-        dbg("EVAL_BARE_VAR CHILDREN:", children)
+        dbg("EVAL_BARE_VAR CHILDREN:", repr(children))
         result = children[0]
         dbg("EVAL_BARE_VAR RETURNING:{}".format(repr(result)))
         return result
 
     def visit_eval_quoted_var(self, node, children):
         dbg("EVAL_QUOTED_VAR NODE VALUE:", repr(node.value))
-        dbg("EVAL_QUOTED_VAR CHILDREN:", children)
+        dbg("EVAL_QUOTED_VAR CHILDREN:", repr(children))
         result = children[0]
         dbg("EVAL_QUOTED_VAR RETURNING:{}".format(repr(result)))
         return result
 
     def visit_eval_var(self, node, children):
         dbg("EVAL_VAR NODE VALUE:", repr(node.value))
-        dbg("EVAL_VAR CHILDREN:", children)
+        dbg("EVAL_VAR CHILDREN:", repr(children))
         result = VarLookup(children[0])
         dbg("EVAL_VAR RETURNING:{}".format(repr(result)))
         return result
 
     def visit_eval(self, node, children):
         dbg("EVAL NODE VALUE:", repr(node.value))
-        dbg("EVAL CHILDREN:", children)
+        dbg("EVAL CHILDREN:", repr(children))
         result = children[0]
         dbg("EVAL RETURNING:{}".format(repr(result)))
         return result
 
     def visit_quoted_str(self, node, children):
         dbg("QUOTED STRING NODE VALUE:", repr(node.value))
-        dbg("QUOTED STRING CHILDREN:", children)
-        result = None
-        if node.value:
-            result = node.value[1:]
-            result = result[:-1]
+        dbg("QUOTED STRING CHILDREN:", repr(children))
+        result = children
         dbg("QUOTED STRING RETURNING:{}".format(repr(result)))
         return result
 
     def visit_bare_str(self, node, children):
         dbg("BARE STRING NODE VALUE:", repr(node.value))
-        dbg("BARE STRING CHILDREN:", children)
+        dbg("BARE STRING CHILDREN:", repr(children))
         result = node.value
         dbg("BARE STRING RETURNING:{}".format(repr(result)))
         return result
 
     def visit_identifier(self, node, children):
         dbg("IDENTIFIER NODE VALUE:", repr(node.value))
-        dbg("IDENTIFIER CHILDREN:", children)
+        dbg("IDENTIFIER CHILDREN:", repr(children))
         result = node.value
         dbg("IDENTIFIER RETURNING:{}".format(repr(result)))
         return result
 
     def visit_string(self, node, children):
         dbg("STRING NODE VALUE:", repr(node.value))
-        dbg("STRING CHILDREN:", children)
+        dbg("STRING CHILDREN:", repr(children))
 
         result = String(children[0], self.interpreter)
 
@@ -225,10 +215,10 @@ class UniShellVisitor(PTNodeVisitor):
 
 
 class Interpreter:
-    def __init__(self):
+    def __init__(self, grammar=gGrammar):
         self.debug = getDebugLevel() > 0
-        self.programParser = ParserPEG(gGrammar, "program", skipws=False, debug=self.debug)
-        self.evalParser = ParserPEG(gGrammar, "eval", skipws=False, debug=self.debug)
+        self.programParser = ParserPEG(grammar, "program", skipws=False, debug=self.debug)
+        self.evalParser = ParserPEG(grammar, "eval", skipws=False, debug=self.debug)
         self.visitor = UniShellVisitor(interpreter=self, debug=self.debug)
 
     def parse(self, source):
