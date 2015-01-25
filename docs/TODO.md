@@ -1,5 +1,5 @@
 # Todo next
-* Add support for '-' in identifiers
+
 * Workout a better way of hiding command output for selected commands like cd, set and echo when autoprint is on. Create a String pipeline object. Note: Pipeline object != ASG object.
 
 
@@ -131,7 +131,7 @@
 
 * Generate custom ASG (Abstract semantic graph) using the node visitor. 
     * ASG nodes should be callables
-    * Executing the root node should start an inorder execution from left to right. Non leaf nodes may also execute code and/or aggregate the results of their child nodes.
+    * Executing the root node should start an in-order execution from left to right. Non leaf nodes may also execute code and/or aggregate the results of their child nodes.
     * Running the ASG should not change it in anyway. The ASG should operate on the context provided to it. Think of an ASG as a compiled representation of the parsed program.
 * Pass the whole script to the parser instead of executing it line by line
 * Change the string interpolation logic to split the string using the regex instead of substituting the values at parse time. The values should be evaluated and concatenated at run time (__call__)
@@ -149,5 +149,5 @@
 
 # Rejected
 * Reset interpreter between scripts. REASON: This is not required a separate instance of the interpreter should be launched and the script should be run inside it if a new environment is required. Running multiple scripts in the same env can be useful. REVISIT LATER? Maybe.
-
-* Use rule names as indices to the childrens array in visit_* functions instead of numbers. REASON: This will not work since the lower nodes may not return a SemanticActions dictionary. The subnodes may decide to return custom data instead.
+* Use rule names as indices to the children's array in visit_* functions instead of numbers. REASON: This will not work since the lower nodes may not return a SemanticActions dictionary. The subnodes may decide to return custom data instead.
+* Add support for '-' in identifiers. REASON: The '-' character will conflict with the '-' operator. WORKAROUND: Allow quoted strings with the external command operator '!'
